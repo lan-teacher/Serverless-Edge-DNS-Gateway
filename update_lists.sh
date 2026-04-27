@@ -97,7 +97,6 @@ BLOCK_URLS=(
 # ============================================================
 echo "Downloading allowlists..."
 ALLOW_URLS=(
-    "https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt"
     "https://nginx-adg.iepose.cn/list/3318_bai.txt"
 )
 
