@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/430624","/debug","/dns-query"],
+  "include": ["/430624"],
   "exclude": []
 }
