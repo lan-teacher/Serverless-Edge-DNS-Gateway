@@ -30,7 +30,7 @@ extract_domains() {
 }
 
 echo "Downloading and processing blocklists..."
-curl -fsSL --max-time 60 \
+curl -fsSL -v --max-time 60 \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
   -H "Accept: text/html,application/xhtml+xml,*/*" \
   -H "Accept-Language: en-US,en;q=0.9" \
