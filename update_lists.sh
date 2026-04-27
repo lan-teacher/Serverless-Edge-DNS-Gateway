@@ -30,19 +30,37 @@ CURL_OPTS=(
     -H "Accept-Language: en-US,en;q=0.9"
     -H "Referer: https://google.com"
 )
-
 extract_domains() {
-    awk '{
+    local mode="${1:-block}"  # block 或 allow
+    awk -v mode="$mode" '{
         if (/^[[:space:]]*$/ || /^[!#]/) next
+
         line = tolower($0)
+
+        # 判断是否是白名单规则 (@@开头)
+        is_allow = (line ~ /^@@/)
+
+        # 根据模式过滤
+        if (mode == "block" && is_allow) next   # 黑名单模式跳过白名单规则
+        if (mode == "allow" && !is_allow) next  # 白名单模式跳过黑名单规则
+
+        # 去掉前缀
         sub(/^@@\|\|?/, "", line)
         sub(/^\|\|?/, "", line)
+
+        # 去掉修饰符
         sub(/\^.*/, "", line)
         sub(/[#!].*/, "", line)
         sub(/\/.*/, "", line)
         sub(/:.*/, "", line)
+
+        # 处理 hosts 格式
         sub(/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+[[:space:]]+/, "", line)
+
+        # 去除首尾空白
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+
+        # 验证域名格式并去重
         if (line ~ /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/ \
             && !seen[line]++) print line
     }'
@@ -59,7 +77,6 @@ BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Mobile_Ads_filter.txt"
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Chinese_filter.txt"
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Base_filter.txt"
-    "https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt"
     "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt"
     "https://nginx-adg.iepose.cn/list/3318.txt"
 )
