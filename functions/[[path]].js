@@ -1,7 +1,7 @@
 // ==================== CONFIG ====================
-const UPSTREAM_PRIMARY = 'https://bu0eg1tdzu.cloudflare-gateway.com/dns-query';
-const UPSTREAM_FALLBACK = 'https://rhpcv957tj.cloudflare-gateway.com/dns-query';
-const UPSTREAM_GEO_BYPASS = 'https://dns.mullvad.net/dns-query'; // Re-resolve without ECS when geo-block returns loopback
+const UPSTREAM_PRIMARY = 'https://1.1.1.1/dns-query';
+const UPSTREAM_FALLBACK = 'https://8.8.8.8/dns-query';
+const UPSTREAM_GEO_BYPASS = 'https://8.8.4.4/dns-query'; // Re-resolve without ECS when geo-block returns loopback
 const UPSTREAM_TIMEOUT = 5000;
 
 // Refresh interval for ALL lists (blocklist, allowlists, private TLDs, redirect rules)
@@ -819,7 +819,7 @@ async function handleDNSQuery(request, context) {
 async function handleRequest(request, context) {
   const path = new URL(request.url).pathname;
 
-  if (path === '/dns-query') return handleDNSQuery(request, context);
+  if (path === '/430624') return handleDNSQuery(request, context);
 
   if (path === '/debug') {
     if (!DEBUG_ENABLED) return new Response('Not Found', { status: 404 });
@@ -839,7 +839,7 @@ async function handleRequest(request, context) {
 
   if (path === '/apple') {
     const host = new URL(request.url).hostname;
-    const dohUrl = `https://${host}/dns-query`;
+    const dohUrl = `https://${host}/430624`;
     const uuid1 = crypto.randomUUID();
     const uuid2 = crypto.randomUUID();
     const uuid3 = crypto.randomUUID();
