@@ -31,16 +31,19 @@ extract_domains() {
 
 echo "Downloading and processing blocklists..."
 curl -fsSL --max-time 60 \
-https://adguardteam.github.io/HostlistsRegistry/assets/filter_16.txt \
-https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt \
-https://raw.githubusercontent.com/bibicadotnet/AdGuard-Home-blocklists/refs/heads/main/byme.txt \
-https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts \
-https://badmojr.github.io/1Hosts/Lite/adblock.txt \
+https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt \
+https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt \
+https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AWAvenue_Ads_Rule.txt \
+https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Mobile_Ads_filter.txt \
+https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Chinese_filter.txt \
+https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Base_filter.txt \
+https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt \
+https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt
 | extract_domains > "$BLOCK_TMP"
 
 echo "Downloading and processing allowlists..."
 curl -fsSL --max-time 60 \
-https://raw.githubusercontent.com/bibicadotnet/AdGuard-Home-blocklists/refs/heads/main/whitelist.txt \
+https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt \
 | extract_domains > "$ALLOW_TMP"
 
 # Di chuyển file tmp vào thư mục đích
