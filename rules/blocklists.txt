@@ -305614,6 +305614,8 @@ trshow.info
 ru-clip.com
 youporn.com
 static.trafficjunky.com
+xswiper.com
+data.adpresenter.de
 smksports.live
 app.khaddavi.net
 safelinku.com
@@ -312215,6 +312217,7 @@ googlevideo.com
 m.youtube.com
 hentai-id.tv
 linksconsole.com
+misc-api.feathermc.com
 aetv.com
 goldderby.com
 rule34gen.com
@@ -325006,6 +325009,7 @@ autoplius.lt
 workawesome.com
 komikcast.site
 vueuse.org
+wrestletalk.com
 solution-hub.com
 afro.com
 hawaiisbesttravel.com
@@ -326998,6 +327002,7 @@ traderscasa.com
 avxhm.se
 farfetch.com
 hashrate.no
+downornot.net
 healthyrex.com
 heb.com
 webtools.fineaty.com
@@ -327055,7 +327060,6 @@ capwages.com
 aliexpress.com
 comfig.app
 docs.openwebui.com
-downornot.net
 gamersnexus.net
 ganjapreneur.com
 globalchinaev.com
