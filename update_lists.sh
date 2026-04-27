@@ -97,6 +97,7 @@ BLOCK_URLS=(
 # ============================================================
 echo "Downloading allowlists..."
 ALLOW_URLS=(
+    "https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt"
     "https://nginx-adg.iepose.cn/list/3318_bai.txt"
 )
 
@@ -106,7 +107,7 @@ ALLOW_URLS=(
         curl "${CURL_OPTS[@]}" "$url" 2>/dev/null \
             || echo "  [WARN] Failed: $url" >&2
     done
-} | extract_domains "allow"  > "$ALLOW_TMP"  # ← 写临时文件
+} | extract_domains "allow"  >> "$ALLOW_TMP"  # ← 写临时文件
 
 # ============================================================
 # 对比是否有变化，有变化才替换
