@@ -31,7 +31,7 @@ CURL_OPTS=(
     -H "Referer: https://google.com"
 )
 extract_domains() {
-    local mode="${1:-block}"  # block 或 allow
+    local mode="${1:-block}"
     awk -v mode="$mode" '{
         if (/^[[:space:]]*$/ || /^[!#]/) next
 
@@ -40,9 +40,13 @@ extract_domains() {
         # 判断是否是白名单规则 (@@开头)
         is_allow = (line ~ /^@@/)
 
-        # 根据模式过滤
-        if (mode == "block" && is_allow) next   # 黑名单模式跳过白名单规则
-        if (mode == "allow" && !is_allow) next  # 白名单模式跳过黑名单规则
+        # 黑名单模式：跳过 @@ 白名单规则
+        if (mode == "block" && is_allow) next
+
+        # 白名单模式：
+        # - @@ 开头的规则 → 保留
+        # - 普通域名/hosts/|| 格式 → 也保留（白名单文件里的都是要放行的）
+        # - 只跳过明显是黑名单语法但来自黑名单文件的（这里不需要判断）
 
         # 去掉前缀
         sub(/^@@\|\|?/, "", line)
@@ -65,6 +69,7 @@ extract_domains() {
             && !seen[line]++) print line
     }'
 }
+
 
 # ============================================================
 # 下载黑名单 → 写入临时文件
