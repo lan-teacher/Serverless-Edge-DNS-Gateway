@@ -34,7 +34,6 @@ extract_domains() {
     local mode="${1:-block}"
     awk -v mode="$mode" '{
         if (/^[[:space:]]*$/ || /^[!#]/) next
-
         line = tolower($0)
 
         # 判断是否是白名单规则 (@@开头)
@@ -43,17 +42,17 @@ extract_domains() {
         # 黑名单模式：跳过 @@ 白名单规则
         if (mode == "block" && is_allow) next
 
-        # 白名单模式：
-        # - @@ 开头的规则 → 保留
-        # - 普通域名/hosts/|| 格式 → 也保留（白名单文件里的都是要放行的）
-        # - 只跳过明显是黑名单语法但来自黑名单文件的（这里不需要判断）
+        # 白名单模式：跳过非 @@ 规则（黑名单语法不放入白名单）
+        # 如果你希望白名单文件里的普通域名也保留，注释掉下面这行
+        if (mode == "allow" && !is_allow) next
 
-        # 去掉前缀
+        # 去掉前缀 @@|| @@| || |
         sub(/^@@\|\|?/, "", line)
         sub(/^\|\|?/, "", line)
 
-        # 去掉修饰符
+        # 去掉修饰符（^ 及其后面所有内容，包括 $important 等）
         sub(/\^.*/, "", line)
+        sub(/\$.*/, "", line)   # ← 新增：处理没有 ^ 直接跟 $ 的情况
         sub(/[#!].*/, "", line)
         sub(/\/.*/, "", line)
         sub(/:.*/, "", line)
@@ -69,7 +68,6 @@ extract_domains() {
             && !seen[line]++) print line
     }'
 }
-
 
 # ============================================================
 # 下载黑名单 → 写入临时文件
@@ -92,7 +90,7 @@ BLOCK_URLS=(
         curl "${CURL_OPTS[@]}" "$url" 2>/dev/null \
             || echo "  [WARN] Failed: $url" >&2
     done
-} | extract_domains > "$BLOCK_TMP"  # ← 写临时文件
+} | extract_domains  "block"  > "$BLOCK_TMP"  # ← 写临时文件
 
 # ============================================================
 # 下载白名单 → 写入临时文件
@@ -109,7 +107,7 @@ ALLOW_URLS=(
         curl "${CURL_OPTS[@]}" "$url" 2>/dev/null \
             || echo "  [WARN] Failed: $url" >&2
     done
-} | extract_domains > "$ALLOW_TMP"  # ← 写临时文件
+} | extract_domains "allow"  > "$ALLOW_TMP"  # ← 写临时文件
 
 # ============================================================
 # 对比是否有变化，有变化才替换
