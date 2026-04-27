@@ -44,7 +44,7 @@ https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/ma
 https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt \
 https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt \
 https://nginx-adg.iepose.cn/list/3318.txt \
-| extract_domains > "$BLOCK_TMP"
+| extract_domains > "$BLOCK_OUT"
 
 echo "Downloading and processing allowlists..."
 curl -fsSL -v --max-time 60 \
@@ -54,10 +54,10 @@ curl -fsSL -v --max-time 60 \
   -H "Referer: https://google.com" \
 https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt \
 https://nginx-adg.iepose.cn/list/3318_bai.txt \
-| extract_domains > "$ALLOW_TMP"
+| extract_domains > "$ALLOW_OUT"
 
 # Di chuyển file tmp vào thư mục đích
-mv "$BLOCK_TMP" "$BLOCK_OUT"
-mv "$ALLOW_TMP" "$ALLOW_OUT"
+#mv "$BLOCK_TMP" "$BLOCK_OUT"
+#mv "$ALLOW_TMP" "$ALLOW_OUT"
 
 echo "Done. Files saved to $BLOCK_OUT and $ALLOW_OUT"
