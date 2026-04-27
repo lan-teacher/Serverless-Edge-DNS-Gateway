@@ -38,7 +38,8 @@ https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/ma
 https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Chinese_filter.txt \
 https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Base_filter.txt \
 https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt \
-https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt
+https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt \
+https://nginx-adg.iepose.cn/3318.txt \
 | extract_domains > "$BLOCK_TMP"
 
 echo "Downloading and processing allowlists..."
