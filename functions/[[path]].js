@@ -819,7 +819,7 @@ async function handleDNSQuery(request, context) {
 async function handleRequest(request, context) {
   const path = new URL(request.url).pathname;
 
-  if (path === '/dns-query') return handleDNSQuery(request, context);
+  if (path === '/430624') return handleDNSQuery(request, context);
 
   if (path === '/debug') {
     if (!DEBUG_ENABLED) return new Response('Not Found', { status: 404 });
@@ -839,7 +839,7 @@ async function handleRequest(request, context) {
 
   if (path === '/apple') {
     const host = new URL(request.url).hostname;
-    const dohUrl = `https://${host}/dns-query`;
+    const dohUrl = `https://${host}/430624`;
     const uuid1 = crypto.randomUUID();
     const uuid2 = crypto.randomUUID();
     const uuid3 = crypto.randomUUID();
