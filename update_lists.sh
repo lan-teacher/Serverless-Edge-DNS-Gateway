@@ -9,12 +9,13 @@ ALLOW_TMP="/tmp/allowlists.tmp"
 
 # Tạo thư mục rules nếu chưa có
 mkdir -p "./$DIR"
-
+l1=`wc -l ./$DIR/blocklists.txt| awk {'pring $1'}`
+l2=`wc -l ./$DIR/allowlists.txt| awk {'pring $1'}`
+echo > ${BLOCK_OUT}
+echo > ${ALLOW_OUT}
 # Cleanup khi script exit
 trap "rm -f $BLOCK_TMP $ALLOW_TMP; exit" INT TERM EXIT
-l1=`wc -l ./$DIR/blocklists.txt`
-l2=`wc -l ./$DIR/allowlists.txt`
-echo "当前黑名单${l1}条,白名单${l2}条"
+echo "清空前当前黑名单${l1}条,白名单${l2}条"
 
 extract_domains() {
   awk '{
@@ -62,7 +63,7 @@ https://nginx-adg.iepose.cn/list/3318_bai.txt \
 # Di chuyển file tmp vào thư mục đích
 #mv "$BLOCK_TMP" "$BLOCK_OUT"
 #mv "$ALLOW_TMP" "$ALLOW_OUT"
-l1=`wc -l ./$DIR/blocklists.txt`
-l2=`wc -l ./$DIR/allowlists.txt`
+l1=`wc -l ./$DIR/blocklists.txt| awk {'pring $1'}`
+l2=`wc -l ./$DIR/allowlists.txt| awk {'pring $1'}`
 echo "当前黑名单${l1}条,白名单${l2}条"
 echo "Done. Files saved to $BLOCK_OUT and $ALLOW_OUT"
