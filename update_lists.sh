@@ -31,6 +31,10 @@ extract_domains() {
 
 echo "Downloading and processing blocklists..."
 curl -fsSL --max-time 60 \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
+  -H "Accept: text/html,application/xhtml+xml,*/*" \
+  -H "Accept-Language: en-US,en;q=0.9" \
+  -H "Referer: https://google.com" \
 https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt \
 https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt \
 https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AWAvenue_Ads_Rule.txt \
@@ -44,6 +48,10 @@ https://nginx-adg.iepose.cn/list/3318.txt \
 
 echo "Downloading and processing allowlists..."
 curl -fsSL --max-time 60 \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
+  -H "Accept: text/html,application/xhtml+xml,*/*" \
+  -H "Accept-Language: en-US,en;q=0.9" \
+  -H "Referer: https://google.com" \
 https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt \
 https://nginx-adg.iepose.cn/list/3318_bai.txt \
 | extract_domains > "$ALLOW_TMP"
