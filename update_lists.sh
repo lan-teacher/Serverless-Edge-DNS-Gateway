@@ -12,6 +12,9 @@ mkdir -p "./$DIR"
 
 # Cleanup khi script exit
 trap "rm -f $BLOCK_TMP $ALLOW_TMP; exit" INT TERM EXIT
+l1=`wc -l ./$DIR/blocklists.txt`
+l2=`wc -l ./$DIR/allowlists.txt`
+echo "当前黑名单${l1}条,白名单${l2}条"
 
 extract_domains() {
   awk '{
@@ -30,7 +33,7 @@ extract_domains() {
 }
 
 echo "Downloading and processing blocklists..."
-curl -fsSL -v --max-time 60 \
+curl -fsSL  --max-time 60 \
    -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
   -H "Accept: text/plain, */*;q=0.1" \
   -H "Accept-Language: en-US,en;q=0.9" \
@@ -44,20 +47,22 @@ https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/ma
 https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt \
 https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt \
 https://nginx-adg.iepose.cn/list/3318.txt \
-| extract_domains > "$BLOCK_OUT"
+| extract_domains > "$DIR/blocklists.txt"
 
 echo "Downloading and processing allowlists..."
-curl -fsSL -v --max-time 60 \
+curl -fsSL  --max-time 60 \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
   -H "Accept: text/plain, */*;q=0.1" \
   -H "Accept-Language: en-US,en;q=0.9" \
   -H "Referer: https://google.com" \
 https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt \
 https://nginx-adg.iepose.cn/list/3318_bai.txt \
-| extract_domains > "$ALLOW_OUT"
+| extract_domains > "$DIR/allowlists.txt"
 
 # Di chuyển file tmp vào thư mục đích
 #mv "$BLOCK_TMP" "$BLOCK_OUT"
 #mv "$ALLOW_TMP" "$ALLOW_OUT"
-
+l1=`wc -l ./$DIR/blocklists.txt`
+l2=`wc -l ./$DIR/allowlists.txt`
+echo "当前黑名单${l1}条,白名单${l2}条"
 echo "Done. Files saved to $BLOCK_OUT and $ALLOW_OUT"
