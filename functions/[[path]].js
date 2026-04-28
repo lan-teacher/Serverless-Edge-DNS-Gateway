@@ -225,20 +225,21 @@ function hasLoopbackInAnswer(buf) {
 function isDomainBlocked(domain) {
   if (!domain || adBlocklist.size === 0) return false;
 
-  // 白名单检查（精确匹配 + 后缀匹配）
-  if (adAllowlist.has(domain)) return false;
+  const levels = [];
+  levels.push(domain); // 精确匹配自身
   let pos = 0;
   while ((pos = domain.indexOf('.', pos)) !== -1) {
-    if (adAllowlist.has(domain.substring(pos + 1))) return false;
+    levels.push(domain.substring(pos + 1));
     pos++;
   }
 
-  // 黑名单检查（精确匹配 + 后缀匹配）
-  if (adBlocklist.has(domain)) return true;
-  pos = 0;
-  while ((pos = domain.indexOf('.', pos)) !== -1) {
-    if (adBlocklist.has(domain.substring(pos + 1))) return true;
-    pos++;
+  // 从最精确到最宽泛逐级判断
+  // 谁先匹配谁优先（白名单和黑名单同级比较）
+  for (const level of levels) {
+    const inAllow = adAllowlist.has(level);
+    const inBlock = adBlocklist.has(level);
+    if (inAllow) return false; // 白名单命中 → 放行
+    if (inBlock) return true;  // 黑名单命中 → 拦截
   }
 
   return false;
