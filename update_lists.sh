@@ -184,7 +184,7 @@ process_urls() {
             done < <(echo "$content" | extract_domains "$mode")
             echo "     ✓ BLOCK:${block_count} ALLOW:${allow_count}"
         else
-            echo "  [WARN] Failed: $url"
+            echo "  [报错] 下载失败: $url"
         fi
     done
 }
@@ -194,7 +194,7 @@ process_urls() {
 # ============================================================
 echo ""
 echo "=========================================="
-echo "Downloading blocklists..."
+echo "开始下载黑名单 blocklists..."
 
 BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
@@ -224,15 +224,14 @@ fi
 # 白名单源
 # ============================================================
 echo ""
-echo "Downloading allowlists..."
+echo "开始下载白名单 allowlists..."
 
 ALLOW_URLS=(
     "https://raw.githubusercontent.com/Menghuibanxian/AdguardHome/main/White.txt"
     "https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt"
-    "https://raw.githubusercontent.com/juju-0211/AdGuardHome-/main/%E7%99%BD%E5%90%8D%E5%8D5.txt"
+    "https://raw.githubusercontent.com/juju-0211/AdGuardHome-/main/白名单.txt"
     "https://raw.githubusercontent.com/mphin/adguardhome_rules/main/Allowlist.txt"
     "https://raw.githubusercontent.com/Zisbusy/AdGuardHome-Rules/main/Rules/whitelist.txt"
-    "https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/white.txt"
 )
 
 > "$ALLOW_TMP"
