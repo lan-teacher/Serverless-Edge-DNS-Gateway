@@ -136,7 +136,6 @@ tb3.bdstatic.com
 tb4.bdstatic.com
 tb5.bdstatic.com
 bdstatic.com
-baidu.com
 passport.baidu.com
 ugc.baidu.com
 imgsrc.baidu.com
