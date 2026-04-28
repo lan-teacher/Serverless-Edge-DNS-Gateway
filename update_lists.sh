@@ -81,7 +81,7 @@ BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Chinese_filter.txt"
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Base_filter.txt"
     "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt"
-    "https://nginx-adg.iepose.cn/list/3318.txt"
+    # "https://nginx-adg.iepose.cn/list/3318.txt"
 )
 
 {
@@ -91,14 +91,14 @@ BLOCK_URLS=(
             || echo "  [WARN] Failed: $url" >&2
     done
 } | extract_domains  "block"  > "$BLOCK_TMP"  # ← 写临时文件
-
+cat ./rules/hei.txt >> "$BLOCK_TMP" # 把自定义的黑名单加进去
 # ============================================================
 # 下载白名单 → 写入临时文件
 # ============================================================
 echo "Downloading allowlists..."
 ALLOW_URLS=(
     "https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt"
-    "https://nginx-adg.iepose.cn/list/3318_bai.txt"
+    # "https://nginx-adg.iepose.cn/list/3318_bai.txt"
 )
 
 {
