@@ -225,11 +225,21 @@ function hasLoopbackInAnswer(buf) {
 function isDomainBlocked(domain) {
   if (!domain || adBlocklist.size === 0) return false;
 
-  // EXACT MATCH ONLY - Check allowlist first (priority)
+  // 白名单检查（精确匹配 + 后缀匹配）
   if (adAllowlist.has(domain)) return false;
+  let pos = 0;
+  while ((pos = domain.indexOf('.', pos)) !== -1) {
+    if (adAllowlist.has(domain.substring(pos + 1))) return false;
+    pos++;
+  }
 
-  // EXACT MATCH ONLY - Check blocklist
+  // 黑名单检查（精确匹配 + 后缀匹配）
   if (adBlocklist.has(domain)) return true;
+  pos = 0;
+  while ((pos = domain.indexOf('.', pos)) !== -1) {
+    if (adBlocklist.has(domain.substring(pos + 1))) return true;
+    pos++;
+  }
 
   return false;
 }
