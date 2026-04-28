@@ -200,11 +200,9 @@ BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
     "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt"
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AWAvenue_Ads_Rule.txt"
-    "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Mobile_Ads_filter.txt"
-    "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Chinese_filter.txt"
-    "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Base_filter.txt"
     "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt"
-    "https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt"
+    "https://raw.githubusercontent.com/790953214/qy-Ads-Rule/main/black.txt"
+    "https://raw.githubusercontent.com/afwfv/DD-AD/main/rule/DD-AD.txt"
 )
 
 > "$BLOCK_TMP"
