@@ -129,3 +129,12 @@ livep2.l.qq.com
 statis.api.3g.youku.com
 apiv4-iyes.youku.com
 amdc.m.youku.com
+tieba.baidu.com
+tb2.bdstatic.com
+tb1.bdstatic.com
+tb3.bdstatic.com
+gsp0.baidu.com
+imgsrc.baidu.com
+imgsa.baidu.com
+passport.baidu.com
+bdstatic.com
