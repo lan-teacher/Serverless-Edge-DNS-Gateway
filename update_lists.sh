@@ -18,21 +18,10 @@ count_lines() {
 l1=$(count_lines "$BLOCK_OUT")
 l2=$(count_lines "$ALLOW_OUT")
 echo "清空前：黑名单 ${l1} 条，白名单 ${l2} 条"
-
-# ============================================================
-# 核心改动：去掉 -f，改用 HTTP 状态码校验 + 内容校验双重保险
-# --write-out     输出实际 HTTP 状态码
-# --output        内容写到临时文件
-# --location      跟随重定向
-# --max-redirs    最多跟随5次重定向，防止循环
-# ============================================================
 CURL_OPTS=(
-    -sL                          # -s 静默，-L 跟随重定向（去掉 -f）
+    -fsSL         
     --max-time 60
     --retry 3
-    --retry-delay 5
-    --retry-on-http-error 429,500,502,503,504  # 仅对这些码重试
-    --max-redirs 5
     -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     -H "Accept: text/plain, */*;q=0.1"
     -H "Accept-Language: en-US,en;q=0.9"
