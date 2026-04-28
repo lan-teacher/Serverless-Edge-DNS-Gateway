@@ -236,10 +236,8 @@ function isDomainBlocked(domain) {
   // 从最精确到最宽泛逐级判断
   // 谁先匹配谁优先（白名单和黑名单同级比较）
   for (const level of levels) {
-    const inAllow = adAllowlist.has(level);
-    const inBlock = adBlocklist.has(level);
-    if (inAllow) return false; // 白名单命中 → 放行
-    if (inBlock) return true;  // 黑名单命中 → 拦截
+    if (adAllowlist.has(level)) return false;
+    if (adBlocklist.has(level)) return true;
   }
 
   return false;
