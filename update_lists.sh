@@ -147,6 +147,7 @@ BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Chinese_filter.txt"
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AdGuard_Base_filter.txt"
     "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt"
+    "https://raw.gitcode.com/rssv/qy-Ads-Rule/raw/main/black.txt"
 )
 
 # 临时存放从黑名单源里提取出来的白名单条目
