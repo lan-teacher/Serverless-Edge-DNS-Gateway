@@ -97,11 +97,12 @@ cat ./rules/hei.txt >> "$BLOCK_TMP" # 把自定义的黑名单加进去
 # ============================================================
 echo "Downloading allowlists..."
 ALLOW_URLS=(
+   "https://mirror.ghproxy.com/https://raw.githubusercontent.com/BlueSkyXN/AdGuardHomeRules/master/ok.txt"
     "https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt"
     # "https://nginx-adg.iepose.cn/list/3318_bai.txt"
-    https://raw.githubusercontent.com/juju-0211/AdGuardHome-/main/%E7%99%BD%E5%90%8D%E5%8D%95.txt
-    https://raw.githubusercontent.com/mphin/adguardhome_rules/main/Allowlist.txt
-    https://raw.githubusercontent.com/Zisbusy/AdGuardHome-Rules/main/Rules/whitelist.txt
+    "https://raw.githubusercontent.com/juju-0211/AdGuardHome-/main/%E7%99%BD%E5%90%8D%E5%8D%95.txt"
+    "https://raw.githubusercontent.com/mphin/adguardhome_rules/main/Allowlist.txt"
+    "https://raw.githubusercontent.com/Zisbusy/AdGuardHome-Rules/main/Rules/whitelist.txt"
     
 )
 
