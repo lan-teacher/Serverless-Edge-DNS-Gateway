@@ -32,6 +32,7 @@ ad.tencentmusic.com
 adash-emas.cn-hangzhou.aliyuncs.com
 adashbc.ut.taobao.com
 adashx.m.taobao.com
+adblock.adguard.com
 adcdn.pingan.com
 adcdn.tencentmusic.com
 adclick.tencentmusic.com
@@ -47,6 +48,7 @@ ads.tdbank.com
 adsh.wagbridge.taobao.alimama.com
 adsmind.gdtimg.com
 adstats.tencentmusic.com
+adv.bloop.info
 adv.ccb.com
 advert.kf5.com
 adx-bj-req.anythinktech.com
@@ -59,6 +61,7 @@ ali-gamezone.static.yximgs.com
 ali-ky.static.yximgs.com
 ali.static.yximgs.com
 alissl.ucdl.pp.uc.cn
+alllaw.112.2o7.net
 alsc-buy2.ele.me
 amdc.m.taobao.com
 amdc.m.youku.com
@@ -115,6 +118,7 @@ aweme.snssdk.com
 awin1.com
 badjs.weixinbridge.com
 baixing.com
+banner.dna.fi
 bcloud.uc.cn
 bdad.123pan.cn
 belgium.wolterskluwer.com
@@ -137,6 +141,7 @@ cainiao-app-logs.cn-zhangjiakou.log.aliyuncs.com
 captcha.su.baidu.com
 catchup.thisisdax.com
 catdot.dianping.com
+cbsi.map.fastly.net
 cdn.ark.qq.com
 cdn.atmedia.hu
 cdn.datatables.net
@@ -145,6 +150,7 @@ cdn.duurzaam.greenchoice.nl
 cdn.rozetka.com.ua
 cdn.ynuf.aliapp.org
 cfg.imtt.qq.com
+chaturbate.com
 chickfrp.com
 cindyholbrook.lpages.co
 citiintl.122.2o7.net
@@ -179,6 +185,7 @@ collect.alipay.com
 comm.app.autohome.com.cn
 conf.hpplay.cn
 config.cmpassport.com
+content.ingbank.pl
 content.viralize.tv
 cp2-cdn-play.funshion.com
 crm-cdn.peek-cloppenburg.com
@@ -400,6 +407,7 @@ m.toutiao.com
 m.zhuanzhuan.com
 ma135-r.analytics.edgekey.net
 mall.360.cn
+manwa.me
 marketing.net.idealo-partner.com
 mclick.simba.taobao.com
 mdm.openapi.360.cn
@@ -452,6 +460,7 @@ omsc.kpn.com
 onegoods.nosdn.127.net
 onekey1.cmpassport.com
 oneline.nextday.media
+onl.bz
 open.bytedanceapi.com
 open.e.189.cn
 open.e.kuaishou.com
@@ -498,6 +507,7 @@ pgdt.ugdtimg.com
 pgpartner.com
 pic.imgdb.cn
 pic2.zhimg.com
+pics.porn300.com
 pics.porndroids.com
 pitaya.bytedance.com
 pm.funshion.com
@@ -515,6 +525,7 @@ public-cis.exponea.com
 pubmsg.meituan.com
 pull-tsl-hs-spe-f5.douyincdn.com
 pull-tsl-hs-spe-f5.douyinliving.com
+puma.112.2o7.net
 puser.funshion.com
 puui.qpic.cn
 puzzles-games-api.gp-prod.conde.digital
@@ -534,10 +545,12 @@ recommender.scarabresearch.com
 redir.ownpage.fr
 redir.tradedoubler.com
 redirect.appmetrica.yandex.com
+redirect.disqus.com
 ref.rbauction.com
 refer.discover.com
 remembering.ca
 report.passport.360.cn
+reports.adguard.com
 res.ads.nicovideo.jp
 res.mi.baidu.com
 resolver.msg.xiaomi.net
@@ -546,6 +559,7 @@ rpt.gdt.qq.com
 s.bluecore.com
 s.click.taobao.com
 s.mvconf.f.360.cn
+s.optnx.com
 s0.2mdn.net
 s1.d.meituan.net
 s1.wp.com
@@ -568,6 +582,7 @@ secureimage.securedataimages.com
 security.snssdk.com
 sedge.nfl.com
 sentry.zhuanzhuan.com
+sgqcvfjvr.onet.pl
 shopping.ele.me
 short-video.kakamobi.cn
 shouji.360.cn
@@ -581,6 +596,7 @@ smart.360.cn
 smsks1.cmpassport.com
 smtp.focusgroupresearch.com
 snowflake.qq.com
+sobot.com
 sofire.baidu.com
 sogoucdn.com
 soup.v.qq.com
@@ -597,6 +613,7 @@ stash.roistat.com
 stat.tpns.tencent.com
 staticsns.cdn.bcebos.com
 statis.api.3g.youku.com
+stats.britishbaseball.org.uk
 stats.gc.apple.com
 statsig.com
 str.hit.gemius.pl
@@ -673,6 +690,7 @@ vcs-quality.zijieapi.com
 vcs.zijieapi.com
 verify.cmpassport.com
 vip1.kuwo.cn
+vitacost.122.2o7.net
 vps.uc.cn
 vr.gdt.qq.com
 vs.biz.weibo.com
@@ -682,6 +700,7 @@ w1.kskwai.com
 w8.com.cn
 waimai-guide.ele.me
 wan.baidu.com
+wan.douyu.com
 wap.cmpassport.com
 waphn.189.cn
 weather-analytics-events.apple.com
@@ -709,6 +728,7 @@ www.paypalobjects.com
 www.statcounter.com
 www.toutiao.com
 www.wandoujia.com
+wwwimage-tve.cbsstatic.com
 wxa.wxs.qq.com
 wxapp.lvyadx.cn
 wximg.wxs.qq.com
@@ -719,6 +739,7 @@ wxsnsdy.video.qq.com
 wxsnsdy.wxs.qq.com
 wxsnsdythumb.wxs.qq.com
 x.adnet.qq.com
+x2.ifengimg.com
 x6img.com
 xc.gdt.qq.com
 xifuquan.com
