@@ -198,6 +198,8 @@ echo "开始下载黑名单 blocklists..."
 # "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
 # "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt"
 BLOCK_URLS=(
+    "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
+    "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt"
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/AWAvenue_Ads_Rule.txt"
     "https://raw.githubusercontent.com/2771936993/HG/main/hg1.txt"
     "https://raw.githubusercontent.com/790953214/qy-Ads-Rule/main/black.txt"
