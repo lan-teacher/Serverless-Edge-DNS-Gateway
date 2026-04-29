@@ -208,6 +208,7 @@ dc.sigmob.cn
 dcms.1688.com
 dd-static.jd.com
 develope-oss.lanzoug.com
+developers.google.com
 dfcfw.com
 dftoutiao.com
 dig.lianjia.com
@@ -596,7 +597,6 @@ smart.360.cn
 smsks1.cmpassport.com
 smtp.focusgroupresearch.com
 snowflake.qq.com
-sobot.com
 sofire.baidu.com
 sogoucdn.com
 soup.v.qq.com
