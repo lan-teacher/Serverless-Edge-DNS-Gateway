@@ -52,18 +52,59 @@ let blocklistPromise = null;
 let blocklistsFetched = false; // Track if lists have been fetched at least once
 
 // ==================== AD BLOCK ====================
+// async function fetchList(url) {
+//   try {
+//     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+//     if (!res.ok) return new Set();
+//     const text = await res.text();
+//     const domains = new Set();
+//     for (const line of text.split('\n')) {
+//       const d = line.trim();
+//       if (d && !d.startsWith('#') && !d.startsWith('!')) domains.add(d);
+//     }
+//     return domains;
+//   } catch { return new Set(); }
+// }
 async function fetchList(url) {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) return new Set();
-    const text = await res.text();
+    
+    // 获取完整的文本内容
+    let text = await res.text();
     const domains = new Set();
-    for (const line of text.split('\n')) {
-      const d = line.trim();
-      if (d && !d.startsWith('#') && !d.startsWith('!')) domains.add(d);
+    
+    // ⚠️ 核心内存优化：不用 split('\n')，改用游标逐行读取
+    let start = 0;
+    let end;
+    while ((end = text.indexOf('\n', start)) !== -1) {
+      // 提取单行并清理首尾空格
+      const line = text.slice(start, end).trim();
+      start = end + 1; // 移动游标到下一行
+      
+      // 过滤空行和注释
+      if (!line || line.charCodeAt(0) === 35 /* # */ || line.charCodeAt(0) === 33 /* ! */) {
+        continue;
+      }
+      
+      domains.add(line.toLowerCase()); // 强制统一转小写，防止匹配失败
     }
+    
+    // 处理最后一行（如果没有以 \n 结尾）
+    if (start < text.length) {
+      const line = text.slice(start).trim();
+      if (line && line.charCodeAt(0) !== 35 && line.charCodeAt(0) !== 33) {
+        domains.add(line.toLowerCase());
+      }
+    }
+    
+    // 强制解除 text 的引用，帮助 V8 引擎进行垃圾回收(GC)，释放内存
+    text = null; 
+    
     return domains;
-  } catch { return new Set(); }
+  } catch (e) { 
+    return new Set(); 
+  }
 }
 
 async function fetchRedirectRules(url) {
