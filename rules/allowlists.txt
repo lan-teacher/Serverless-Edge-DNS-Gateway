@@ -597,6 +597,7 @@ smart.360.cn
 smsks1.cmpassport.com
 smtp.focusgroupresearch.com
 snowflake.qq.com
+sobot.com
 sofire.baidu.com
 sogoucdn.com
 soup.v.qq.com
