@@ -18,28 +18,26 @@ count_lines() {
 l1=$(count_lines "$BLOCK_OUT")
 l2=$(count_lines "$ALLOW_OUT")
 echo "清空前：黑名单 ${l1} 条，白名单 ${l2} 条"
+
 CURL_OPTS=(
     -fsSL         
     --max-time 60
     --retry 3
     -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    -H "Accept: text/plain, */*;q=0.1"
+    -H "Accept: text/plain, _/_;q=0.1"
     -H "Accept-Language: en-US,en;q=0.9"
     -H "Referer: https://google.com"
 )
 
 # ============================================================
 # 安全下载函数：校验 HTTP 状态码 + 内容是否像规则文件
-# 用法：safe_curl <url>
-# 成功时输出文件内容到 stdout，失败时输出空并返回非零
 # ============================================================
 safe_curl() {
     local url="$1"
     local tmp_body
     tmp_body=$(mktemp /tmp/curl_body.XXXXXX)
     local http_code
-
-    # --write-out 输出状态码到 stdout，body 写到临时文件
+    
     http_code=$(curl "${CURL_OPTS[@]}" \
         --write-out "%{http_code}" \
         --output "$tmp_body" \
@@ -47,15 +45,13 @@ safe_curl() {
             rm -f "$tmp_body"
             return 1
         }
-
-    # 检查 HTTP 状态码必须是 2xx
+        
     if [[ ! "$http_code" =~ ^2 ]]; then
         echo "  [WARN] HTTP ${http_code}: $url" >&2
         rm -f "$tmp_body"
         return 1
     fi
-
-    # 检查文件大小（至少 100 字节，防止空文件或极短错误页）
+    
     local size
     size=$(wc -c < "$tmp_body" | tr -d ' ')
     if [[ "$size" -lt 100 ]]; then
@@ -63,8 +59,7 @@ safe_curl() {
         rm -f "$tmp_body"
         return 1
     fi
-
-    # 检查内容是否像 HTML 页面（说明被重定向到登录页/错误页）
+    
     local first_line
     first_line=$(head -c 200 "$tmp_body" | tr '[:upper:]' '[:lower:]')
     if echo "$first_line" | grep -qE '<!doctype html|<html'; then
@@ -72,15 +67,13 @@ safe_curl() {
         rm -f "$tmp_body"
         return 1
     fi
-
-    # 校验通过，输出内容
     cat "$tmp_body"
     rm -f "$tmp_body"
     return 0
 }
 
 # ============================================================
-# extract_domains <mode>
+# 提取规则函数
 # ============================================================
 extract_domains() {
     local mode="$1"
@@ -99,11 +92,11 @@ extract_domains() {
         return (d ~ /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/)
     }
     {
+        sub(/\r$/, "") # 核心修复: 去除 Windows 换行符，防止域名后接不可见字符
         if (/^[[:space:]]*$/) next
         if (/^[[:space:]]*[#!]/) next
-
         line = tolower($0)
-
+        
         # 情形1：白名单规则 @@||domain^
         if (line ~ /^@@\|/) {
             sub(/^@@\|\|?/, "", line)
@@ -112,7 +105,7 @@ extract_domains() {
                 print "ALLOW:" domain
             next
         }
-
+        
         # 情形2：黑名单规则 ||domain^
         if (line ~ /^\|/) {
             sub(/^\|\|?/, "", line)
@@ -125,7 +118,7 @@ extract_domains() {
             }
             next
         }
-
+        
         # 情形3：hosts 格式
         if (line ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+[[:space:]]/) {
             sub(/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+[[:space:]]+/, "", line)
@@ -138,14 +131,12 @@ extract_domains() {
             }
             next
         }
-
+        
         # 情形4：纯域名
         if (line ~ /[*\[\]\/\\@]/) next
         if (line ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/) next
-
         domain = clean(line)
         if (!is_valid(domain)) next
-
         if (mode == "block_src") {
             if (!seen_block[domain]++) print "BLOCK:" domain
         } else {
@@ -157,7 +148,6 @@ extract_domains() {
 
 # ============================================================
 # 通用下载处理函数
-# 用法：process_urls <mode> <block_tmp> <allow_tmp> <url1> <url2> ...
 # ============================================================
 process_urls() {
     local mode="$1"
@@ -165,7 +155,7 @@ process_urls() {
     local a_tmp="$3"
     shift 3
     local urls=("$@")
-
+    
     for url in "${urls[@]}"; do
         echo "  -> $url"
         local content
@@ -182,7 +172,7 @@ process_urls() {
                     (( allow_count++ )) || true
                 fi
             done < <(echo "$content" | extract_domains "$mode")
-            echo "     ✓ BLOCK:${block_count} ALLOW:${allow_count}"
+            echo "     ✓ 提取到 黑名单:${block_count} | 白名单:${allow_count}"
         else
             echo "  [报错] 下载失败: $url"
         fi
@@ -190,13 +180,12 @@ process_urls() {
 }
 
 # ============================================================
-# 黑名单源
+# 1. 黑名单源处理
 # ============================================================
 echo ""
 echo "=========================================="
-echo "开始下载黑名单 blocklists..."
-# "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
-# "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt"
+echo "开始下载并处理黑名单 blocklists..."
+
 BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
     "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt"
@@ -212,19 +201,19 @@ BLOCK_URLS=(
 
 process_urls "block_src" "$BLOCK_TMP" "$ALLOW_FROM_BLOCK_TMP" "${BLOCK_URLS[@]}"
 
-# 追加自定义黑名单
 if [[ -f ./rules/hei.txt ]]; then
-    echo "  -> ./rules/hei.txt (custom)"
+    echo "  -> 追加 ./rules/hei.txt (自定义黑名单)"
     while IFS= read -r tagged; do
         [[ "${tagged%%:*}" == "BLOCK" ]] && echo "${tagged#*:}" >> "$BLOCK_TMP"
     done < <(extract_domains "block_src" < ./rules/hei.txt)
 fi
 
 # ============================================================
-# 白名单源
+# 2. 白名单源处理
 # ============================================================
 echo ""
-echo "开始下载白名单 allowlists..."
+echo "=========================================="
+echo "开始下载并处理白名单 allowlists..."
 
 ALLOW_URLS=(
     "https://raw.githubusercontent.com/Menghuibanxian/AdguardHome/main/White.txt"
@@ -235,42 +224,47 @@ ALLOW_URLS=(
 )
 
 > "$ALLOW_TMP"
-
 process_urls "allow_src" "/dev/null" "$ALLOW_TMP" "${ALLOW_URLS[@]}"
 
-# 追加自定义白名单
 if [[ -f ./rules/bai.txt ]]; then
-    echo "  -> ./rules/bai.txt (custom)"
+    echo "  -> 追加 ./rules/bai.txt (自定义白名单)"
     while IFS= read -r tagged; do
         [[ "${tagged%%:*}" == "ALLOW" ]] && echo "${tagged#*:}" >> "$ALLOW_TMP"
     done < <(extract_domains "allow_src" < ./rules/bai.txt)
 fi
 
-# 追加从黑名单源提取的 @@ 白名单
 if [[ -s "$ALLOW_FROM_BLOCK_TMP" ]]; then
-    echo "  -> 合并黑名单源中提取的 @@ 白名单 ($(wc -l < "$ALLOW_FROM_BLOCK_TMP" | tr -d ' ') 条)"
+    echo "  -> 追加从黑名单源提取的 @@ 白名单 ($(wc -l < "$ALLOW_FROM_BLOCK_TMP" | tr -d ' ') 条)"
     cat "$ALLOW_FROM_BLOCK_TMP" >> "$ALLOW_TMP"
 fi
 
 # ============================================================
-# 去重排序
+# 3. 精确去重与交叉冲突剔除
 # ============================================================
 echo ""
-echo "去重排序中..."
+echo "正在进行去重与交叉对比隔离..."
+
+# 先对两个文件进行完全精确的去重
 sort -u "$BLOCK_TMP" -o "$BLOCK_TMP"
 sort -u "$ALLOW_TMP" -o "$ALLOW_TMP"
 
+# 如果一个域名同时出现在黑白名单里，直接把它从黑名单删了（节约Cloudflare内存）
+# 使用 comm -23 提取在 黑名单(1) 有且不在 白名单(2) 的内容
+mv "$BLOCK_TMP" "$BLOCK_TMP.uncleaned"
+comm -23 "$BLOCK_TMP.uncleaned" "$ALLOW_TMP" > "$BLOCK_TMP"
+rm -f "$BLOCK_TMP.uncleaned"
+
+
 # ============================================================
-# 对比是否有变化
+# 4. 对比是否有变化
 # ============================================================
 CHANGED=false
-
 if ! diff -q "$BLOCK_TMP" "$BLOCK_OUT" > /dev/null 2>&1; then
     mv "$BLOCK_TMP" "$BLOCK_OUT"
     echo "✅ 黑名单已更新"
     CHANGED=true
 else
-    echo "⏭️  黑名单无变化，跳过"
+    echo "⏭️  黑名单无变化，跳过更新"
 fi
 
 if ! diff -q "$ALLOW_TMP" "$ALLOW_OUT" > /dev/null 2>&1; then
@@ -278,21 +272,22 @@ if ! diff -q "$ALLOW_TMP" "$ALLOW_OUT" > /dev/null 2>&1; then
     echo "✅ 白名单已更新"
     CHANGED=true
 else
-    echo "⏭️  白名单无变化，跳过"
+    echo "⏭️  白名单无变化，跳过更新"
 fi
 
 # ============================================================
-# 最终统计
+# 5. 最终统计
 # ============================================================
 l1=$(count_lines "$BLOCK_OUT")
 l2=$(count_lines "$ALLOW_OUT")
 echo ""
 echo "=========================================="
+echo "🎯 最终处理结果："
 echo "黑名单：${l1} 条 -> $BLOCK_OUT"
 echo "白名单：${l2} 条 -> $ALLOW_OUT"
 if [[ "$CHANGED" == "true" ]]; then
-    echo "📦 内容有变化，将触发 Push"
+    echo "📦 内容有变化，准备提交 Push"
 else
-    echo "🔕 内容无变化，不会触发 Push"
+    echo "🔕 内容无变化"
 fi
 echo "=========================================="
