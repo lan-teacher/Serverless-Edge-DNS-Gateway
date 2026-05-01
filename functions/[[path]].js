@@ -1,71 +1,52 @@
 // ==================== CONFIG ====================
 const UPSTREAM_PRIMARY = 'https://cloudflare-dns.com/dns-query';
-const UPSTREAM_FALLBACK = 'https://dns.google/dns-query';
+const UPSTREAM_FALLBACK =  'https://dns.google/dns-query';
 const UPSTREAM_GEO_BYPASS = 'https://1.1.1.1/dns-query';  // Re-resolve without ECS when geo-block returns loopback
 const UPSTREAM_TIMEOUT = 5000;
+
 const AD_BLOCK_ENABLED = true;
 const BLOCKLIST_URL = '/rules/blocklists.txt';
 const ALLOWLIST_URL = '/rules/allowlists.txt';
+
 const ECS_INJECTION_ENABLED = true;
 const ECS_PREFIX_V4 = 24;
 const ECS_PREFIX_V6 = 48;
+
 // Block query types early to save Cloudflare Pages requests
 const BLOCK_ANY = true;    // TYPE 255 — ANY queries
 const BLOCK_AAAA = true;   // TYPE 28  — IPv6 queries
 const BLOCK_PTR = true;    // TYPE 12  — Reverse DNS
 const BLOCK_HTTPS = true;  // TYPE 65  — HTTPS record queries
+
 // Block private/internal TLDs and router domains
 const BLOCK_PRIVATE_TLD = true;
 const PRIVATE_TLD_URL = '/rules/private_tlds.txt';
+
 // DNS redirect/rewrite (local CNAME overrides)
 const DNS_REDIRECT_ENABLED = true;
 const REDIRECT_RULES_URL = '/rules/redirect_rules.txt';
+
 // Dedicated Mullvad Upstream Domains
 const MULLVAD_UPSTREAM_ENABLED = true;
 const MULLVAD_UPSTREAM_URL = '/rules/mullvad_upstream.txt';
+
 // /debug endpoint — set to true only when needed, false by default to avoid unnecessary requests
 const DEBUG_ENABLED = false;
-
-// 【新增】2小时缓存时长 (秒)
-const CACHE_TTL = 7200; 
 
 // Pre-compiled regex patterns for performance
 const IPV4_MAPPED_REGEX = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i;
 const IPV6_VALID_REGEX = /^[0-9a-f:]+$/i;
 const IPV6_GROUP_REGEX = /^[0-9a-f]+$/i;
+
 // ==================== STATE ====================
 let adBlocklist = new Set();
 let adAllowlist = new Set();
 let privateTlds = new Set();
 let redirectRules = new Map(); // domain → target domain
 let mullvadUpstreamDomains = new Set();
+
 let blocklistPromise = null;
 let blocklistsFetched = false; // 唯一开关：只在节点冷启动时加载一次
-
-// ==================== CACHE & UTILS (新增) ====================
-// 生成安全的 Base64 用于 Cache Key
-function bufToBase64Url(buf) {
-  let binary = '';
-  const bytes = new Uint8Array(buf);
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
-// 提取网段( /24或/48 )作为缓存键的一部分，防止不同地域的 ECS IP 串在一起导致绕过地区策略
-function getSubnetKey(ip) {
-  if (!ip || ip === 'unknown') return 'unknown';
-  const mapped = ip.match(IPV4_MAPPED_REGEX);
-  if (mapped) ip = mapped[1];
-  if (ip.includes(':')) {
-    const parts = ip.split(':');
-    return parts.slice(0, 3).join(':'); 
-  } else {
-    const parts = ip.split('.');
-    return parts.slice(0, 3).join('.');
-  }
-}
 
 // ==================== MEMORY OPTIMIZED FETCH ====================
 // 极低内存占用的获取函数，使用游标切片代替 split('\n')，防止 40 万条规则瞬间撑爆内存
@@ -73,33 +54,41 @@ async function fetchList(url) {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) return new Set();
+    
     let text = await res.text();
     const domains = new Set();
+    
     let start = 0;
     let end;
     while ((end = text.indexOf('\n', start)) !== -1) {
       const line = text.slice(start, end).trim();
       start = end + 1;
-      if (!line || line.charCodeAt(0) === 35 /* # _/ || line.charCodeAt(0) === 33 /_ ! */) continue;
+      
+      if (!line || line.charCodeAt(0) === 35 /* # */ || line.charCodeAt(0) === 33 /* ! */) continue;
       domains.add(line.toLowerCase());
     }
+    
     if (start < text.length) {
       const line = text.slice(start).trim();
       if (line && line.charCodeAt(0) !== 35 && line.charCodeAt(0) !== 33) {
         domains.add(line.toLowerCase());
       }
     }
+    
     // 强制解除引用，帮助 V8 引擎立刻回收垃圾内存
-    text = null;
+    text = null; 
     return domains;
   } catch { return new Set(); }
 }
+
 async function fetchRedirectRules(url) {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) return new Map();
+    
     let text = await res.text();
     const rules = new Map();
+    
     let start = 0;
     let end;
     while ((end = text.indexOf('\n', start)) !== -1) {
@@ -109,6 +98,7 @@ async function fetchRedirectRules(url) {
       const parts = line.split(/\s+/);
       if (parts.length === 2) rules.set(parts[0].toLowerCase(), parts[1].toLowerCase());
     }
+    
     if (start < text.length) {
       const line = text.slice(start).trim();
       if (line && line.charCodeAt(0) !== 35 && line.charCodeAt(0) !== 33) {
@@ -120,10 +110,12 @@ async function fetchRedirectRules(url) {
     return rules;
   } catch { return new Map(); }
 }
+
 // 唯一加载入口：防并发锁 + 只下载一次
 async function loadBlocklists(baseUrl) {
   if (blocklistsFetched) return;
   if (blocklistPromise) return blocklistPromise;
+  
   blocklistPromise = (async () => {
     try {
       const bUrl = new URL(BLOCKLIST_URL, baseUrl).toString();
@@ -131,6 +123,7 @@ async function loadBlocklists(baseUrl) {
       const pUrl = new URL(PRIVATE_TLD_URL, baseUrl).toString();
       const rUrl = new URL(REDIRECT_RULES_URL, baseUrl).toString();
       const mUrl = new URL(MULLVAD_UPSTREAM_URL, baseUrl).toString();
+      
       const [block, allow, privateList, redirRules, mullvadList] = await Promise.all([
         AD_BLOCK_ENABLED ? fetchList(bUrl).catch(() => new Set()) : Promise.resolve(new Set()),
         AD_BLOCK_ENABLED ? fetchList(aUrl).catch(() => new Set()) : Promise.resolve(new Set()),
@@ -138,23 +131,27 @@ async function loadBlocklists(baseUrl) {
         DNS_REDIRECT_ENABLED ? fetchRedirectRules(rUrl).catch(() => new Map()) : Promise.resolve(new Map()),
         MULLVAD_UPSTREAM_ENABLED ? fetchList(mUrl).catch(() => new Set()) : Promise.resolve(new Set())
       ]);
+      
       if (AD_BLOCK_ENABLED) { adBlocklist = block; adAllowlist = allow; }
       if (BLOCK_PRIVATE_TLD) { privateTlds = privateList; }
       if (DNS_REDIRECT_ENABLED) { redirectRules = redirRules; }
       if (MULLVAD_UPSTREAM_ENABLED) { mullvadUpstreamDomains = mullvadList; }
+      
       blocklistsFetched = true;
-    } finally {
-      blocklistPromise = null;
+    } finally { 
+      blocklistPromise = null; 
     }
   })();
   return blocklistPromise;
 }
+
 // 供主入口调用的极简加载器：0 毫秒放行（热） or 等待（冷）
 async function ensureBlocklistsLoaded(url) {
   if (!blocklistsFetched) {
     await loadBlocklists(url);
   }
 }
+
 // ==================== DNS PARSING ====================
 function extractQtype(buf) {
   try {
@@ -173,6 +170,7 @@ function extractQtype(buf) {
     return (v[off] << 8) | v[off + 1];
   } catch { return null; }
 }
+
 function getBlockedQtypes() {
   const blocked = new Set();
   if (BLOCK_ANY) blocked.add(255);
@@ -182,6 +180,7 @@ function getBlockedQtypes() {
   return blocked;
 }
 const BLOCKED_QTYPES = getBlockedQtypes();
+
 function extractAllDomains(buf) {
   const domains = [];
   try {
@@ -209,6 +208,7 @@ function extractAllDomains(buf) {
   } catch { }
   return domains;
 }
+
 function hasLoopbackInAnswer(buf) {
   try {
     const v = new Uint8Array(buf);
@@ -246,6 +246,7 @@ function hasLoopbackInAnswer(buf) {
   } catch { }
   return false;
 }
+
 // ==================== FILTER LOGIC ====================
 function isDomainBlocked(domain) {
   if (!domain || adBlocklist.size === 0) return false;
@@ -262,6 +263,7 @@ function isDomainBlocked(domain) {
   }
   return false;
 }
+
 function isDomainPrivate(domain) {
   if (!domain || privateTlds.size === 0) return false;
   if (privateTlds.has(domain)) return true;
@@ -272,6 +274,7 @@ function isDomainPrivate(domain) {
   }
   return false;
 }
+
 function isMullvadDomain(domain) {
   if (!domain || mullvadUpstreamDomains.size === 0) return false;
   if (mullvadUpstreamDomains.has(domain)) return true;
@@ -282,6 +285,7 @@ function isMullvadDomain(domain) {
   }
   return false;
 }
+
 // ==================== RESPONSES ====================
 function buildNxdomain(query) {
   const v = new Uint8Array(query);
@@ -308,6 +312,7 @@ function buildNxdomain(query) {
   res[10] = 0; res[11] = 0;
   return res.buffer;
 }
+
 function buildNodata(query) {
   const v = new Uint8Array(query);
   if (v.length < 12) {
@@ -333,6 +338,7 @@ function buildNodata(query) {
   res[10] = 0; res[11] = 0;
   return res.buffer;
 }
+
 function buildServfail(query) {
   const v = new Uint8Array(query);
   if (v.length < 12) {
@@ -358,6 +364,7 @@ function buildServfail(query) {
   res[10] = 0; res[11] = 0;
   return res.buffer;
 }
+
 // ==================== ECS INJECTION ====================
 function injectECS(query, clientIP) {
   if (!ECS_INJECTION_ENABLED || !clientIP || clientIP === 'unknown') return query;
@@ -410,6 +417,7 @@ function injectECS(query, clientIP) {
     return result.buffer;
   } catch { return query; }
 }
+
 function stripOPT(view) {
   let off = 12;
   const qd = (view[4] << 8) | view[5];
@@ -465,6 +473,7 @@ function stripOPT(view) {
   r[11] = keptRecords.length & 0xFF;
   return r;
 }
+
 function ipv6ToBytes(ip) {
   try {
     if (!ip || typeof ip !== 'string') return null;
@@ -489,6 +498,7 @@ function ipv6ToBytes(ip) {
     return bytes;
   } catch { return null; }
 }
+
 // ==================== DNS REDIRECT ====================
 function encodeDomainName(domain) {
   if (!domain || domain === '.') return new Uint8Array([0]);
@@ -504,6 +514,7 @@ function encodeDomainName(domain) {
   buf[off++] = 0;
   return buf;
 }
+
 function decodeName(v, startOff) {
   let labels = [];
   let curr = startOff;
@@ -534,6 +545,7 @@ function decodeName(v, startOff) {
   }
   return { name: labels.length === 0 ? "." : labels.join('.'), nextOff: jumped ? nextOff : curr };
 }
+
 function rewriteQname(query, targetDomain) {
   const v = new Uint8Array(query);
   if (v.length < 12) return query;
@@ -552,6 +564,7 @@ function rewriteQname(query, targetDomain) {
   result.set(afterQname, 12 + targetWire.length);
   return result.buffer;
 }
+
 function buildRedirectResponse(originalQuery, upstreamResponse, originalDomain, targetDomain) {
   const uv = new Uint8Array(upstreamResponse);
   const qv = new Uint8Array(originalQuery);
@@ -628,6 +641,7 @@ function buildRedirectResponse(originalQuery, upstreamResponse, originalDomain, 
   }
   return res.buffer;
 }
+
 // ==================== DNS FORWARDING ====================
 async function forwardQuery(query, upstream) {
   const res = await fetch(upstream, {
@@ -639,6 +653,7 @@ async function forwardQuery(query, upstream) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.arrayBuffer();
 }
+
 async function resolveQuery(query, clientIP) {
   const processed = injectECS(query, clientIP);
   let result;
@@ -662,6 +677,7 @@ async function resolveQuery(query, clientIP) {
   }
   return result;
 }
+
 // ==================== HANDLERS ====================
 async function handleDNSQuery(request, context) {
   const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
@@ -692,59 +708,21 @@ async function handleDNSQuery(request, context) {
     }
   }
 
-  // ================= CACHE ENGINE START =================
-  const b64Query = bufToBase64Url(query);
-  const subnetKey = getSubnetKey(clientIP); 
-  
-  // 统一的缓存验证和存储包装函数
-  async function executeWithCache(prefix, processingFn, extraHeaders = {}) {
-    const cacheUrl = `https://cache.local/${prefix}?q=${b64Query}&ecs=${subnetKey}`;
-    const cacheReq = new Request(cacheUrl, { method: 'GET' });
-    const cache = caches.default;
-    
-    // 1. 尝试读缓存 (命中由于跳过上游，响应时间低至10ms内)
-    const cached = await cache.match(cacheReq);
-    if (cached) {
-      // 重新构造 Response 是为了允许编辑后续的 Header
-      const resp = new Response(cached.body, cached);
-      resp.headers.set('X-Cache-Status', 'HIT'); 
-      return resp;
-    }
-    
-    // 2. 未命中跑真实的网络解析
-    const dataBuffer = await processingFn();
-    
-    // 3. 构造 7200 秒缓存期的对象
-    const resp = new Response(dataBuffer, {
-      headers: { 
-        ...cors, 
-        'Content-Type': 'application/dns-message', 
-        'Cache-Control': `public, max-age=${CACHE_TTL}`, // 关键：指定强制缓存 2 小时
-        'X-Cache-Status': 'MISS',
-        ...extraHeaders 
-      }
-    });
-
-    // 4. 后台静默将响应存入缓存（不阻塞用户返回时间）
-    context.waitUntil(cache.put(cacheReq, resp.clone()));
-    return resp;
-  }
-  // ================= CACHE ENGINE END =================
-
   // 保证规则加载（冷启动时等待一次，之后耗时 0 毫秒）
   if (AD_BLOCK_ENABLED || BLOCK_PRIVATE_TLD || DNS_REDIRECT_ENABLED || MULLVAD_UPSTREAM_ENABLED) {
     await ensureBlocklistsLoaded(request.url);
+
     const domains = extractAllDomains(query);
     for (const domain of domains) {
       if (!domain) continue;
 
-      // Mullvad 特殊路由（加缓存）
       if (MULLVAD_UPSTREAM_ENABLED && isMullvadDomain(domain)) {
         try {
-          return await executeWithCache('mullvad', async () => {
-            const processed = injectECS(query, clientIP);
-            return await forwardQuery(processed, UPSTREAM_GEO_BYPASS);
-          }, { 'X-Upstream': 'Mullvad' });
+          const processed = injectECS(query, clientIP);
+          const data = await forwardQuery(processed, UPSTREAM_GEO_BYPASS);
+          return new Response(data, {
+            headers: { ...cors, 'Content-Type': 'application/dns-message', 'X-Upstream': 'Mullvad' }
+          });
         } catch {
           return new Response(buildServfail(query), {
             headers: { ...cors, 'Content-Type': 'application/dns-message', 'X-Upstream': 'Mullvad-Failed' }
@@ -752,27 +730,27 @@ async function handleDNSQuery(request, context) {
         }
       }
 
-      // 屏蔽查询，因为是本地生成所以 0 延时，不占用慢速 Cache API
       if (BLOCK_PRIVATE_TLD && isDomainPrivate(domain)) {
         return new Response(buildNxdomain(query), {
           headers: { ...cors, 'Content-Type': 'application/dns-message', 'X-Blocked-Private': domain }
         });
       }
+
       if (AD_BLOCK_ENABLED && isDomainBlocked(domain)) {
         return new Response(buildNxdomain(query), {
           headers: { ...cors, 'Content-Type': 'application/dns-message', 'X-Blocked': domain }
         });
       }
 
-      // 重写解析路由（加缓存）
       if (DNS_REDIRECT_ENABLED && redirectRules.has(domain)) {
         const targetDomain = redirectRules.get(domain);
         try {
-          return await executeWithCache('redirect', async () => {
-            const rewritten = rewriteQname(query, targetDomain);
-            const upstreamData = await resolveQuery(rewritten, clientIP);
-            return buildRedirectResponse(query, upstreamData, domain, targetDomain);
-          }, { 'X-Redirected': `${domain} -> ${targetDomain}` });
+          const rewritten = rewriteQname(query, targetDomain);
+          const upstreamData = await resolveQuery(rewritten, clientIP);
+          const redirected = buildRedirectResponse(query, upstreamData, domain, targetDomain);
+          return new Response(redirected, {
+            headers: { ...cors, 'Content-Type': 'application/dns-message', 'X-Redirected': `${domain} -> ${targetDomain}` }
+          });
         } catch {
         // Fall through to normal resolution
         }
@@ -780,21 +758,26 @@ async function handleDNSQuery(request, context) {
     }
   }
 
-  // 常规上游解析（加缓存）
+  // Forward to upstream
   try {
-    return await executeWithCache('normal', async () => {
-      return await resolveQuery(query, clientIP);
+    const data = await resolveQuery(query, clientIP);
+    return new Response(data, {
+      headers: { ...cors, 'Content-Type': 'application/dns-message' }
     });
   } catch {
     return new Response('Upstream error', { status: 502, headers: cors });
   }
 }
+
 // ==================== ROUTING ====================
 async function handleRequest(request, context) {
   const path = new URL(request.url).pathname;
+  
   if (path === '/430624') return handleDNSQuery(request, context);
+  
   return new Response('Not Found', { status: 404 });
 }
+
 export async function onRequest(context) {
   return handleRequest(context.request, context);
 }
