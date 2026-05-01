@@ -726,3 +726,14 @@ log.ximalaya.com
 data.xmcdn.com
 growing.ximalaya.com
 adx-api.ximalaya.com
+gdt.qq.com
+mi.gdt.qq.com
+win.gdt.qq.com
+v.gdt.qq.com
+t.gdt.qq.com
+w.gdt.qq.com
+c.gdt.qq.com
+adsmind.gdtimg.com
+pgdt.gtimg.cn
+adsmind.tc.qq.com
+pgdt.ugdtimg.com
