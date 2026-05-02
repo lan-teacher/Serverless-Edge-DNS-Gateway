@@ -3,9 +3,9 @@ const 上游主服务器 = 'https://1.1.1.1/dns-query';
 const 上游备用服务器 = 'https://8.8.8.8/dns-query';
 const 上游超时时间 = 5000;
 
-const 黑名单地址 = '/rules/blocklists.txt';
-const 白名单地址 = '/rules/allowlists.txt';
-const 私有域名地址 = '/rules/private_tlds.txt';
+const 黑名单地址 = './rules/blocklists.txt';
+const 白名单地址 = './rules/allowlists.txt';
+const 私有域名地址 = './rules/private_tlds.txt';
 
 const 启用广告拦截 = true;
 const 启用私有域名拦截 = true;
