@@ -10,8 +10,6 @@ const PRIVATE_TLD_URL = '/rules/private_tlds.txt';
 const AD_BLOCK_ENABLED = true;
 const BLOCK_PRIVATE_TLD = true;
 
-const DAILY_INTERVAL = 24 * 60 * 60 * 1000;
-
 // ==================== STATE ====================
 let adBlocklist = Object.create(null);
 let adAllowlist = Object.create(null);
@@ -24,35 +22,50 @@ let blockCount = 0;
 let allowCount = 0;
 let privateCount = 0;
 
-let lastDailyReport = 0;
-
 // ==================== 企业微信发送 ====================
 async function sendQywx(env, content) {
   if (!env?.qywxkey) return;
 
   try {
-    await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${env.qywxkey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        msgtype: 'text',
-        text: { content }
-      })
-    });
+    await fetch(
+      `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${env.qywxkey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          msgtype: 'text',
+          text: { content }
+        })
+      }
+    );
   } catch (e) {
     console.error('企业微信发送失败:', e);
   }
 }
 
-function buildReportContent(title, costMs = 0) {
+// ==================== 部署成功只发送一次 ====================
+async function notifyDeployOnce(env, costMs) {
+  if (!env?.adg) return;
+
+  // 当前部署版本ID（Cloudflare 自动生成）
+  const versionId =
+    env.CF_VERSION_METADATA?.id ||
+    `manual_${Date.now()}`;
+
+  const kvKey = `deploy_notify_${versionId}`;
+
+  const alreadySent = await env.adg.get(kvKey);
+  if (alreadySent) return;
+
   const total = blockCount + allowCount + privateCount;
   const estimatedMemoryMB =
     ((total * 60) / (1024 * 1024)).toFixed(2);
 
-  return `
-${title}
+  const content = `
+✅ DNS 服务部署成功
 
 时间: ${new Date().toISOString()}
+部署版本: ${versionId}
 黑名单数量: ${blockCount}
 白名单数量: ${allowCount}
 私有域名数量: ${privateCount}
@@ -60,15 +73,11 @@ ${title}
 估算内存: ${estimatedMemoryMB} MB
 加载耗时: ${costMs} ms
 `;
-}
 
-// ==================== 每日报告 ====================
-async function maybeSendDailyReport(env) {
-  const now = Date.now();
-  if (now - lastDailyReport > DAILY_INTERVAL && rulesReady) {
-    lastDailyReport = now;
-    await sendQywx(env, buildReportContent('DNS 每日运行状态报告'));
-  }
+  await sendQywx(env, content);
+
+  // 写入 KV 标记
+  await env.adg.put(kvKey, '1');
 }
 
 // ==================== LIST PARSER ====================
@@ -124,10 +133,12 @@ async function loadLists(baseUrl, env) {
 
       const cost = Date.now() - start;
 
-      await sendQywx(env, buildReportContent('✅ DNS 规则加载成功', cost));
+      // ✅ 只在部署后发送一次
+      await notifyDeployOnce(env, cost);
 
     } catch (e) {
       rulesReady = false;
+
       await sendQywx(env, `
 ❌ DNS 规则加载失败
 
@@ -142,8 +153,7 @@ async function loadLists(baseUrl, env) {
   return blocklistPromise;
 }
 
-// ==================== 其余DNS逻辑保持不变 ====================
-
+// ==================== MATCH ====================
 function matchDomain(domain, blockMap, allowMap) {
   if (!domain) return false;
   let d = domain;
@@ -169,25 +179,31 @@ function matchPrivate(domain) {
   return false;
 }
 
+// ==================== DNS PARSE ====================
 function extractDomain(buf) {
   const v = new Uint8Array(buf);
   if (v.length < 12) return null;
+
   let off = 12;
   let labels = [];
+
   while (off < v.length) {
     const len = v[off++];
     if (len === 0) break;
     if ((len & 0xC0) === 0xC0) break;
     if (off + len > v.length) return null;
+
     let label = '';
     for (let i = 0; i < len; i++) {
       label += String.fromCharCode(v[off++]);
     }
     labels.push(label);
   }
+
   return labels.length ? labels.join('.').toLowerCase() : null;
 }
 
+// ==================== DNS RESPONSES ====================
 function buildServfail(query) {
   const v = new Uint8Array(query);
   const res = new Uint8Array(v.length);
@@ -206,6 +222,7 @@ function buildNxdomain(query) {
   return res.buffer;
 }
 
+// ==================== FORWARD ====================
 async function forwardQuery(query) {
   try {
     const res = await fetch(UPSTREAM_PRIMARY, {
@@ -233,9 +250,9 @@ async function forwardQuery(query) {
   }
 }
 
+// ==================== DNS HANDLER ====================
 async function handleDNS(request, env) {
   await loadLists(request.url, env);
-  await maybeSendDailyReport(env);
 
   let query;
 
@@ -277,10 +294,13 @@ async function handleDNS(request, env) {
   });
 }
 
+// ==================== ROUTING ====================
 export async function onRequest(context) {
   const path = new URL(context.request.url).pathname;
+
   if (path === '/430624') {
     return handleDNS(context.request, context.env);
   }
+
   return new Response('Not Found', { status: 404 });
 }
