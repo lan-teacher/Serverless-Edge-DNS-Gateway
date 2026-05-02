@@ -10,6 +10,8 @@ const PRIVATE_TLD_URL = '/rules/private_tlds.txt';
 const AD_BLOCK_ENABLED = true;
 const BLOCK_PRIVATE_TLD = true;
 
+const DAILY_INTERVAL = 24 * 60 * 60 * 1000;
+
 // ==================== STATE ====================
 let adBlocklist = Object.create(null);
 let adAllowlist = Object.create(null);
@@ -22,25 +24,11 @@ let blockCount = 0;
 let allowCount = 0;
 let privateCount = 0;
 
-// ==================== 企业微信告警 ====================
-async function sendQywxNotify(env, loadCostMs) {
+let lastDailyReport = 0;
+
+// ==================== 企业微信发送 ====================
+async function sendQywx(env, content) {
   if (!env?.qywxkey) return;
-
-  const total = blockCount + allowCount + privateCount;
-  const estimatedMemoryMB =
-    ((blockCount + allowCount + privateCount) * 60) / (1024 * 1024);
-
-  const content = `
-DNS 规则加载完成通知
-
-时间: ${new Date().toISOString()}
-黑名单数量: ${blockCount}
-白名单数量: ${allowCount}
-私有域名数量: ${privateCount}
-总规则数量: ${total}
-估算内存: ${estimatedMemoryMB.toFixed(2)} MB
-加载耗时: ${loadCostMs} ms
-`;
 
   try {
     await fetch(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${env.qywxkey}`, {
@@ -52,7 +40,34 @@ DNS 规则加载完成通知
       })
     });
   } catch (e) {
-    console.error('企业微信通知失败:', e);
+    console.error('企业微信发送失败:', e);
+  }
+}
+
+function buildReportContent(title, costMs = 0) {
+  const total = blockCount + allowCount + privateCount;
+  const estimatedMemoryMB =
+    ((total * 60) / (1024 * 1024)).toFixed(2);
+
+  return `
+${title}
+
+时间: ${new Date().toISOString()}
+黑名单数量: ${blockCount}
+白名单数量: ${allowCount}
+私有域名数量: ${privateCount}
+总规则数量: ${total}
+估算内存: ${estimatedMemoryMB} MB
+加载耗时: ${costMs} ms
+`;
+}
+
+// ==================== 每日报告 ====================
+async function maybeSendDailyReport(env) {
+  const now = Date.now();
+  if (now - lastDailyReport > DAILY_INTERVAL && rulesReady) {
+    lastDailyReport = now;
+    await sendQywx(env, buildReportContent('DNS 每日运行状态报告'));
   }
 }
 
@@ -62,8 +77,7 @@ async function parseList(response) {
   const map = Object.create(null);
   let count = 0;
 
-  const lines = text.split('\n');
-  for (let line of lines) {
+  for (let line of text.split('\n')) {
     line = line.trim();
     if (!line) continue;
     const c = line.charCodeAt(0);
@@ -84,18 +98,14 @@ async function loadLists(baseUrl, env) {
     const start = Date.now();
 
     try {
-      const bUrl = new URL(BLOCKLIST_URL, baseUrl).toString();
-      const aUrl = new URL(ALLOWLIST_URL, baseUrl).toString();
-      const pUrl = new URL(PRIVATE_TLD_URL, baseUrl).toString();
-
       const [blockRes, allowRes, privateRes] = await Promise.all([
-        fetch(bUrl),
-        fetch(aUrl),
-        fetch(pUrl)
+        fetch(new URL(BLOCKLIST_URL, baseUrl)),
+        fetch(new URL(ALLOWLIST_URL, baseUrl)),
+        fetch(new URL(PRIVATE_TLD_URL, baseUrl))
       ]);
 
       if (!blockRes.ok || !allowRes.ok || !privateRes.ok) {
-        throw new Error('Rule fetch failed');
+        throw new Error('规则拉取失败');
       }
 
       const blockData = await parseList(blockRes);
@@ -114,12 +124,16 @@ async function loadLists(baseUrl, env) {
 
       const cost = Date.now() - start;
 
-      await sendQywxNotify(env, cost);
+      await sendQywx(env, buildReportContent('✅ DNS 规则加载成功', cost));
 
-      console.log('Rules loaded success');
     } catch (e) {
-      console.error('Rule load failed:', e);
       rulesReady = false;
+      await sendQywx(env, `
+❌ DNS 规则加载失败
+
+时间: ${new Date().toISOString()}
+错误信息: ${e.message}
+`);
     } finally {
       blocklistPromise = null;
     }
@@ -128,7 +142,8 @@ async function loadLists(baseUrl, env) {
   return blocklistPromise;
 }
 
-// ==================== MATCH ====================
+// ==================== 其余DNS逻辑保持不变 ====================
+
 function matchDomain(domain, blockMap, allowMap) {
   if (!domain) return false;
   let d = domain;
@@ -154,31 +169,25 @@ function matchPrivate(domain) {
   return false;
 }
 
-// ==================== DNS PARSE ====================
 function extractDomain(buf) {
   const v = new Uint8Array(buf);
   if (v.length < 12) return null;
-
   let off = 12;
   let labels = [];
-
   while (off < v.length) {
     const len = v[off++];
     if (len === 0) break;
     if ((len & 0xC0) === 0xC0) break;
     if (off + len > v.length) return null;
-
     let label = '';
     for (let i = 0; i < len; i++) {
       label += String.fromCharCode(v[off++]);
     }
     labels.push(label);
   }
-
   return labels.length ? labels.join('.').toLowerCase() : null;
 }
 
-// ==================== DNS RESPONSES ====================
 function buildServfail(query) {
   const v = new Uint8Array(query);
   const res = new Uint8Array(v.length);
@@ -197,7 +206,6 @@ function buildNxdomain(query) {
   return res.buffer;
 }
 
-// ==================== FORWARD ====================
 async function forwardQuery(query) {
   try {
     const res = await fetch(UPSTREAM_PRIMARY, {
@@ -225,9 +233,9 @@ async function forwardQuery(query) {
   }
 }
 
-// ==================== DNS HANDLER ====================
 async function handleDNS(request, env) {
   await loadLists(request.url, env);
+  await maybeSendDailyReport(env);
 
   let query;
 
@@ -269,13 +277,10 @@ async function handleDNS(request, env) {
   });
 }
 
-// ==================== ROUTING ====================
 export async function onRequest(context) {
   const path = new URL(context.request.url).pathname;
-
   if (path === '/430624') {
     return handleDNS(context.request, context.env);
   }
-
   return new Response('Not Found', { status: 404 });
 }
