@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
-const UPSTREAM_PRIMARY = 'https://cloudflare-dns.com/dns-query';
-const UPSTREAM_FALLBACK = 'https://dns.google/dns-query';
+const UPSTREAM_PRIMARY = 'https://pzlcot7qfk.cloudflare-gateway.com/dns-query';
+const UPSTREAM_FALLBACK = 'https://cloudflare-dns.com/dns-query'; 
 const UPSTREAM_TIMEOUT = 5000;
 
 const AD_BLOCK_ENABLED = true;
