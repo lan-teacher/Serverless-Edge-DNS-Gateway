@@ -1,123 +1,178 @@
-// ==================== CONFIG ====================
-const UPSTREAM_PRIMARY = 'https://1.1.1.1/dns-query';
-const UPSTREAM_FALLBACK = 'https://8.8.8.8/dns-query';
-const UPSTREAM_TIMEOUT = 5000;
+// ==================== 基础配置 ====================
+const 上游主服务器 = 'https://1.1.1.1/dns-query';
+const 上游备用服务器 = 'https://8.8.8.8/dns-query';
+const 上游超时时间 = 5000;
 
-const BLOCKLIST_URL = '/rules/blocklists.txt';
-const ALLOWLIST_URL = '/rules/allowlists.txt';
-const PRIVATE_TLD_URL = '/rules/private_tlds.txt';
+const 黑名单地址 = '/rules/blocklists.txt';
+const 白名单地址 = '/rules/allowlists.txt';
+const 私有域名地址 = '/rules/private_tlds.txt';
 
-const AD_BLOCK_ENABLED = true;
-const BLOCK_PRIVATE_TLD = true;
+const 启用广告拦截 = true;
+const 启用私有域名拦截 = true;
 
-// ==================== STATE ====================
-let adBlocklist = Object.create(null);
-let adAllowlist = Object.create(null);
-let privateTlds = Object.create(null);
+// ==================== 企业微信告警 ====================
+const 启用企业微信告警 = true;
 
-let rulesReady = false;
-let blocklistPromise = null;
+// ==================== 全局状态 ====================
+let 黑名单 = Object.create(null);
+let 白名单 = Object.create(null);
+let 私有域名表 = Object.create(null);
 
-let blockCount = 0;
-let allowCount = 0;
-let privateCount = 0;
+let 规则已就绪 = false;
+let 加载任务 = null;
 
-// ==================== LIST PARSER ====================
-async function parseList(response) {
-  const text = await response.text();
-  const map = Object.create(null);
+let 黑名单数量 = 0;
+let 白名单数量 = 0;
+let 私有域名数量 = 0;
+
+// ==================== 企业微信发送函数 ====================
+async function 发送企业微信通知(标题, 内容, context) {
+  if (!启用企业微信告警) return;
+
+  const key = context.env.qywxkey;
+  if (!key) return;
+
+  const url = `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${key}`;
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        msgtype: "markdown",
+        markdown: {
+          content: `### ${标题}\n${内容}`
+        }
+      })
+    });
+  } catch (e) {
+    console.error("企业微信通知失败:", e);
+  }
+}
+
+// ==================== 解析规则文件 ====================
+async function 解析规则(response) {
+  const 文本 = await response.text();
+  const 表 = Object.create(null);
 
   let start = 0;
   let end;
   let count = 0;
 
-  while ((end = text.indexOf('\n', start)) !== -1) {
-    const line = text.slice(start, end).trim();
+  while ((end = 文本.indexOf('\n', start)) !== -1) {
+    const 行 = 文本.slice(start, end).trim();
     start = end + 1;
+    if (!行) continue;
 
-    if (!line) continue;
-    const c = line.charCodeAt(0);
-    if (c === 35 || c === 33) continue; // # or !
+    const 首字 = 行.charCodeAt(0);
+    if (首字 === 35 || 首字 === 33) continue; // # 或 !
 
-    map[line.toLowerCase()] = 1;
+    表[行.toLowerCase()] = 1;
     count++;
   }
 
-  if (start < text.length) {
-    const line = text.slice(start).trim();
-    if (line) {
-      const c = line.charCodeAt(0);
-      if (c !== 35 && c !== 33) {
-        map[line.toLowerCase()] = 1;
+  if (start < 文本.length) {
+    const 行 = 文本.slice(start).trim();
+    if (行) {
+      const 首字 = 行.charCodeAt(0);
+      if (首字 !== 35 && 首字 !== 33) {
+        表[行.toLowerCase()] = 1;
         count++;
       }
     }
   }
 
-  return { map, count };
+  return { 表, count };
 }
 
-// ==================== LOAD RULES ====================
-async function loadLists(baseUrl) {
-  if (rulesReady) return;
-  if (blocklistPromise) return blocklistPromise;
+// ==================== 加载规则 ====================
+async function 加载规则列表(baseUrl, context) {
+  if (规则已就绪) return;
+  if (加载任务) return 加载任务;
 
-  blocklistPromise = (async () => {
+  const 开始时间 = Date.now();
+
+  加载任务 = (async () => {
     try {
-      const bUrl = new URL(BLOCKLIST_URL, baseUrl).toString();
-      const aUrl = new URL(ALLOWLIST_URL, baseUrl).toString();
-      const pUrl = new URL(PRIVATE_TLD_URL, baseUrl).toString();
+      const 黑名单URL = new URL(黑名单地址, baseUrl).toString();
+      const 白名单URL = new URL(白名单地址, baseUrl).toString();
+      const 私有域名URL = new URL(私有域名地址, baseUrl).toString();
 
-      const [blockRes, allowRes, privateRes] = await Promise.all([
-        fetch(bUrl),
-        fetch(aUrl),
-        fetch(pUrl)
+      const [黑响应, 白响应, 私响应] = await Promise.all([
+        fetch(黑名单URL),
+        fetch(白名单URL),
+        fetch(私有域名URL)
       ]);
 
-      if (!blockRes.ok || !allowRes.ok || !privateRes.ok) {
-        throw new Error('Rule fetch failed');
+      if (!黑响应.ok || !白响应.ok || !私响应.ok) {
+        throw new Error("规则文件下载失败");
       }
 
-      const blockData = await parseList(blockRes);
-      const allowData = await parseList(allowRes);
-      const privateData = await parseList(privateRes);
+      const 黑数据 = await 解析规则(黑响应);
+      const 白数据 = await 解析规则(白响应);
+      const 私数据 = await 解析规则(私响应);
 
-      adBlocklist = blockData.map;
-      adAllowlist = allowData.map;
-      privateTlds = privateData.map;
+      黑名单 = 黑数据.表;
+      白名单 = 白数据.表;
+      私有域名表 = 私数据.表;
 
-      blockCount = blockData.count;
-      allowCount = allowData.count;
-      privateCount = privateData.count;
+      黑名单数量 = 黑数据.count;
+      白名单数量 = 白数据.count;
+      私有域名数量 = 私数据.count;
 
-      rulesReady = true;
+      规则已就绪 = true;
 
-      console.log('Rules loaded:',
-        'block=', blockCount,
-        'allow=', allowCount,
-        'private=', privateCount
+      const 总数 = 黑名单数量 + 白名单数量 + 私有域名数量;
+      const 估算内存MB = ((总数 * 60) / (1024 * 1024)).toFixed(2);
+      const 耗时 = Date.now() - 开始时间;
+
+      context.waitUntil(
+        发送企业微信通知(
+          "✅ DNS 冷启动规则加载成功",
+          `
+> 时间: ${new Date().toISOString()}
+> 黑名单数量: ${黑名单数量}
+> 白名单数量: ${白名单数量}
+> 私有域名数量: ${私有域名数量}
+> 总规则数量: ${总数}
+> 估算内存: ${估算内存MB} MB
+> 加载耗时: ${耗时} ms
+`,
+          context
+        )
       );
 
     } catch (e) {
-      console.error('Rule load failed:', e);
-      rulesReady = false;
+      console.error("规则加载失败:", e);
+      规则已就绪 = false;
+
+      context.waitUntil(
+        发送企业微信通知(
+          "❌ DNS 冷启动规则加载失败",
+          `
+> 时间: ${new Date().toISOString()}
+> 错误信息: ${e.message}
+`,
+          context
+        )
+      );
     } finally {
-      blocklistPromise = null;
+      加载任务 = null;
     }
   })();
 
-  return blocklistPromise;
+  return 加载任务;
 }
 
-// ==================== HIGH PERFORMANCE MATCH ====================
-function matchDomain(domain, blockMap, allowMap) {
+// ==================== 域名匹配 ====================
+function 匹配域名(domain, 黑表, 白表) {
   if (!domain) return false;
 
   let d = domain;
 
   while (true) {
-    if (allowMap && allowMap[d]) return false;
-    if (blockMap[d]) return true;
+    if (白表 && 白表[d]) return false;
+    if (黑表[d]) return true;
 
     const dot = d.indexOf('.');
     if (dot === -1) break;
@@ -127,13 +182,13 @@ function matchDomain(domain, blockMap, allowMap) {
   return false;
 }
 
-function matchPrivate(domain) {
+function 匹配私有域名(domain) {
   if (!domain) return false;
 
   let d = domain;
 
   while (true) {
-    if (privateTlds[d]) return true;
+    if (私有域名表[d]) return true;
 
     const dot = d.indexOf('.');
     if (dot === -1) break;
@@ -143,8 +198,8 @@ function matchPrivate(domain) {
   return false;
 }
 
-// ==================== DNS PARSE ====================
-function extractDomain(buf) {
+// ==================== 提取DNS域名 ====================
+function 提取域名(buf) {
   const v = new Uint8Array(buf);
   if (v.length < 12) return null;
 
@@ -161,62 +216,70 @@ function extractDomain(buf) {
     for (let i = 0; i < len; i++) {
       label += String.fromCharCode(v[off++]);
     }
+
     labels.push(label);
   }
 
   return labels.length ? labels.join('.').toLowerCase() : null;
 }
 
-// ==================== DNS RESPONSES ====================
-function buildServfail(query) {
+// ==================== DNS响应构造 ====================
+function 构造SERVFAIL(query) {
   const v = new Uint8Array(query);
   const res = new Uint8Array(v.length);
   res.set(v);
+
   res[2] = 0x80 | (v[2] & 0x7F);
-  res[3] = 0x82; // SERVFAIL
+  res[3] = 0x82;
+
   return res.buffer;
 }
 
-function buildNxdomain(query) {
+function 构造NXDOMAIN(query) {
   const v = new Uint8Array(query);
   const res = new Uint8Array(v.length);
   res.set(v);
+
   res[2] = 0x80 | (v[2] & 0x7F);
-  res[3] = 0x83; // NXDOMAIN
+  res[3] = 0x83;
+
   return res.buffer;
 }
 
-// ==================== FORWARD ====================
-async function forwardQuery(query) {
+// ==================== 上游转发 ====================
+async function 转发DNS(query) {
   try {
-    const res = await fetch(UPSTREAM_PRIMARY, {
+    const res = await fetch(上游主服务器, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/dns-message',
         'Accept': 'application/dns-message'
       },
       body: query,
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT)
+      signal: AbortSignal.timeout(上游超时时间)
     });
+
     if (!res.ok) throw new Error();
     return await res.arrayBuffer();
+
   } catch {
-    const res = await fetch(UPSTREAM_FALLBACK, {
+    const res = await fetch(上游备用服务器, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/dns-message',
         'Accept': 'application/dns-message'
       },
       body: query,
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT)
+      signal: AbortSignal.timeout(上游超时时间)
     });
+
     return await res.arrayBuffer();
   }
 }
 
-// ==================== DNS HANDLER ====================
-async function handleDNS(request) {
-  await loadLists(request.url);
+// ==================== DNS处理 ====================
+async function 处理DNS(request, context) {
+  await 加载规则列表(request.url, context);
 
   let query;
 
@@ -228,68 +291,44 @@ async function handleDNS(request) {
 
     const b64 = dns.replace(/-/g, '+').replace(/_/g, '/');
     const padded = b64 + '=='.slice(0, (4 - b64.length % 4) % 4);
+
     query = Uint8Array.from(atob(padded), c => c.charCodeAt(0)).buffer;
   }
 
-  // ✅ Fail Closed
-  if (!rulesReady) {
-    return new Response(buildServfail(query), {
+  if (!规则已就绪) {
+    return new Response(构造SERVFAIL(query), {
       headers: { 'Content-Type': 'application/dns-message' }
     });
   }
 
-  const domain = extractDomain(query);
+  const domain = 提取域名(query);
 
-  if (BLOCK_PRIVATE_TLD && matchPrivate(domain)) {
-    return new Response(buildNxdomain(query), {
+  if (启用私有域名拦截 && 匹配私有域名(domain)) {
+    return new Response(构造NXDOMAIN(query), {
       headers: { 'Content-Type': 'application/dns-message' }
     });
   }
 
-  if (AD_BLOCK_ENABLED && matchDomain(domain, adBlocklist, adAllowlist)) {
-    return new Response(buildNxdomain(query), {
+  if (启用广告拦截 && 匹配域名(domain, 黑名单, 白名单)) {
+    return new Response(构造NXDOMAIN(query), {
       headers: { 'Content-Type': 'application/dns-message' }
     });
   }
 
-  const data = await forwardQuery(query);
+  const data = await 转发DNS(query);
 
   return new Response(data, {
     headers: { 'Content-Type': 'application/dns-message' }
   });
 }
 
-// ==================== HEALTH ====================
-function handleHealth() {
-  const estimatedMemoryMB =
-    ((blockCount + allowCount + privateCount) * 60) / (1024 * 1024);
-
-  return new Response(JSON.stringify({
-    status: rulesReady ? 'ready' : 'not_ready',
-    rulesReady,
-    blockCount,
-    allowCount,
-    privateCount,
-    totalRules: blockCount + allowCount + privateCount,
-    estimatedMemoryMB: estimatedMemoryMB.toFixed(2),
-    timestamp: new Date().toISOString()
-  }, null, 2), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-// ==================== ROUTING ====================
+// ==================== 路由 ====================
 export async function onRequest(context) {
   const path = new URL(context.request.url).pathname;
 
   if (path === '/430624') {
-    return handleDNS(context.request);
+    return 处理DNS(context.request, context);
   }
 
-  if (path === '/health') {
-    await loadLists(context.request.url);
-    return handleHealth();
-  }
-
-  return new Response('hello work', { status: 404 });
+  return new Response('Not Found', { status: 404 });
 }
