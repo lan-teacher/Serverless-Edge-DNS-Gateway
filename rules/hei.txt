@@ -737,3 +737,4 @@ adsmind.gdtimg.com
 pgdt.gtimg.cn
 adsmind.tc.qq.com
 pgdt.ugdtimg.com
+innoads.cn
