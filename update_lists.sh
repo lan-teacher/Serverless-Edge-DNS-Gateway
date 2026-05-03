@@ -185,8 +185,7 @@ process_urls() {
 echo ""
 echo "=========================================="
 echo "开始下载并处理黑名单 blocklists..."
- #       "https://big.oisd.nl"
-#  "https://raw.githubusercontent.com/ppfeufer/adguard-filter-list/refs/heads/master/blocklist"
+
  #    "https://raw.githubusercontent.com/qq5460168/666/master/rules.txt"
 BLOCK_URLS=(
     "https://ghfast.top/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt"
@@ -197,6 +196,8 @@ BLOCK_URLS=(
     "https://raw.githubusercontent.com/afwfv/DD-AD/main/rule/DD-AD.txt"
     "https://raw.githubusercontent.com/2Gardon/SM-Ad-FuckU-hosts/master/SMAdHosts"
     "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt"
+    "https://big.oisd.nl"
+    "https://raw.githubusercontent.com/ppfeufer/adguard-filter-list/refs/heads/master/blocklist"
 
 )
 
