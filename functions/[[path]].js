@@ -15,8 +15,10 @@ const MAX_CNAME_DEPTH = 5;
 let adBlocklist = Object.create(null);
 let adAllowlist = Object.create(null);
 let privateTlds = Object.create(null);
+
 let rulesReady = false;
 let loadingPromise = null;
+let lastLoadOk = false;
 
 // ==================== LIST PARSER ====================
 async function parseDomainList(res) {
@@ -39,35 +41,63 @@ async function loadLists(baseUrl) {
   if (loadingPromise) return loadingPromise;
 
   loadingPromise = (async () => {
-    const [blockRes, allowRes, privateRes] = await Promise.all([
-      fetch(new URL(BLOCKLIST_URL, baseUrl)),
-      fetch(new URL(ALLOWLIST_URL, baseUrl)),
-      fetch(new URL(PRIVATE_TLD_URL, baseUrl))
-    ]);
+    try {
+      const [blockRes, allowRes, privateRes] = await Promise.all([
+        fetch(new URL(BLOCKLIST_URL, baseUrl)),
+        fetch(new URL(ALLOWLIST_URL, baseUrl)),
+        fetch(new URL(PRIVATE_TLD_URL, baseUrl))
+      ]);
 
-    adBlocklist = await parseDomainList(blockRes);
-    adAllowlist = await parseDomainList(allowRes);
-    privateTlds = await parseDomainList(privateRes);
+      if (!blockRes.ok || !allowRes.ok || !privateRes.ok) {
+        throw new Error('Failed to fetch one or more rule files');
+      }
 
-    rulesReady = true;
+      const [newBlock, newAllow, newPrivate] = await Promise.all([
+        parseDomainList(blockRes),
+        parseDomainList(allowRes),
+        parseDomainList(privateRes)
+      ]);
+
+      // 全部成功后再替换，避免半更新状态
+      adBlocklist = newBlock;
+      adAllowlist = newAllow;
+      privateTlds = newPrivate;
+
+      rulesReady = true;
+      lastLoadOk = true;
+    } catch (e) {
+      lastLoadOk = false;
+      throw e;
+    } finally {
+      // 防止失败后 promise 卡死，后续可重试
+      loadingPromise = null;
+    }
   })();
 
   return loadingPromise;
 }
 
 // ==================== DOMAIN MATCH ====================
+// 规则：先精准匹配，再父域匹配（支持子域）
+// 精准层：allow 优先于 block
+// 父域层：allow 优先于 block
 function matchDomain(domain, blockMap, allowMap) {
   if (!domain) return false;
+  const d0 = domain.toLowerCase();
 
-  let d = domain;
+  // 1) 精准匹配优先
+  if (allowMap[d0]) return false;
+  if (blockMap[d0]) return true;
 
+  // 2) 父域匹配（子域继承）
+  let d = d0;
   while (true) {
-    if (allowMap[d]) return false;
-    if (blockMap[d]) return true;
-
     const dot = d.indexOf('.');
     if (dot === -1) break;
     d = d.slice(dot + 1);
+
+    if (allowMap[d]) return false;
+    if (blockMap[d]) return true;
   }
 
   return false;
@@ -75,17 +105,14 @@ function matchDomain(domain, blockMap, allowMap) {
 
 function matchPrivate(domain) {
   if (!domain) return false;
-
-  let d = domain;
+  let d = domain.toLowerCase();
 
   while (true) {
     if (privateTlds[d]) return true;
-
     const dot = d.indexOf('.');
     if (dot === -1) break;
     d = d.slice(dot + 1);
   }
-
   return false;
 }
 
@@ -99,8 +126,9 @@ function readName(buf, offset) {
   while (true) {
     const len = view[offset];
 
-    if ((len & 0xC0) === 0xC0) {
-      const pointer = ((len & 0x3F) << 8) | view[offset + 1];
+    // pointer compression
+    if ((len & 0xc0) === 0xc0) {
+      const pointer = ((len & 0x3f) << 8) | view[offset + 1];
       if (!jumped) jumpOffset = offset + 2;
       offset = pointer;
       jumped = true;
@@ -113,9 +141,7 @@ function readName(buf, offset) {
     }
 
     offset++;
-    labels.push(
-      String.fromCharCode(...view.slice(offset, offset + len))
-    );
+    labels.push(String.fromCharCode(...view.slice(offset, offset + len)));
     offset += len;
   }
 
@@ -138,10 +164,10 @@ function extractCnames(buf) {
 
   let offset = 12;
 
-  // skip questions
+  // Skip questions
   for (let i = 0; i < qdcount; i++) {
     const q = readName(buf, offset);
-    offset = q.offset + 4;
+    offset = q.offset + 4; // QTYPE + QCLASS
   }
 
   const cnames = [];
@@ -150,13 +176,17 @@ function extractCnames(buf) {
     const nameRes = readName(buf, offset);
     offset = nameRes.offset;
 
-    const type = view.getUint16(offset);
-    offset += 8; // type + class + ttl
+    const type = view.getUint16(offset); // TYPE
+    offset += 2;
+
+    // CLASS + TTL
+    offset += 2 + 4;
 
     const rdlength = view.getUint16(offset);
     offset += 2;
 
-    if (type === 5) { // CNAME
+    if (type === 5) {
+      // CNAME
       const cnameRes = readName(buf, offset);
       cnames.push(cnameRes.name);
     }
@@ -169,46 +199,51 @@ function extractCnames(buf) {
 
 // ==================== DNS RESPONSES ====================
 function buildNxdomain(query) {
-  const v = new Uint8Array(query);
-  const res = new Uint8Array(v.length);
-  res.set(v);
-  res[2] = 0x80 | (v[2] & 0x7F);
+  const req = new Uint8Array(query);
+  const res = new Uint8Array(req.length);
+  res.set(req);
+
+  // QR=1, keep opcode/flags low bits from request
+  res[2] = 0x80 | (req[2] & 0x7f);
+  // RCODE=3 NXDOMAIN
   res[3] = 0x83;
+
   return res.buffer;
 }
 
 // ==================== FORWARD ====================
 async function forwardQuery(query) {
+  const headers = {
+    'Content-Type': 'application/dns-message',
+    Accept: 'application/dns-message'
+  };
+
   try {
     const res = await fetch(UPSTREAM_PRIMARY, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/dns-message',
-        'Accept': 'application/dns-message'
-      },
+      headers,
       body: query,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT)
     });
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error('Primary upstream failed');
     return await res.arrayBuffer();
   } catch {
     const res = await fetch(UPSTREAM_FALLBACK, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/dns-message',
-        'Accept': 'application/dns-message'
-      },
+      headers,
       body: query,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT)
     });
 
+    if (!res.ok) throw new Error('Fallback upstream failed');
     return await res.arrayBuffer();
   }
 }
 
 // ==================== DNS HANDLER ====================
 async function handleDNS(request) {
+  // 规则没加载成功时，直接报错（你也可以改成 fail-open）
   await loadLists(request.url);
 
   let query;
@@ -220,20 +255,20 @@ async function handleDNS(request) {
     if (!dns) return new Response('Missing dns', { status: 400 });
 
     const b64 = dns.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = b64 + '=='.slice(0, (4 - b64.length % 4) % 4);
+    const padded = b64 + '=='.slice(0, (4 - (b64.length % 4)) % 4);
     query = Uint8Array.from(atob(padded), c => c.charCodeAt(0)).buffer;
   }
 
   const domain = extractQueryDomain(query);
 
-  // Private TLD
+  // Private TLD block
   if (BLOCK_PRIVATE_TLD && matchPrivate(domain)) {
     return new Response(buildNxdomain(query), {
       headers: { 'Content-Type': 'application/dns-message' }
     });
   }
 
-  // Blacklist match
+  // Domain blocklist/allowlist
   if (AD_BLOCK_ENABLED && matchDomain(domain, adBlocklist, adAllowlist)) {
     return new Response(buildNxdomain(query), {
       headers: { 'Content-Type': 'application/dns-message' }
@@ -243,13 +278,11 @@ async function handleDNS(request) {
   // Forward query
   const responseBuffer = await forwardQuery(query);
 
-  // ✅ CNAME recursive inspection
+  // CNAME inspection
   const cnames = extractCnames(responseBuffer);
-
   let depth = 0;
   for (const cname of cnames) {
-    if (depth++ > MAX_CNAME_DEPTH) break;
-
+    if (depth++ >= MAX_CNAME_DEPTH) break;
     if (matchDomain(cname, adBlocklist, adAllowlist)) {
       return new Response(buildNxdomain(query), {
         headers: { 'Content-Type': 'application/dns-message' }
@@ -262,9 +295,36 @@ async function handleDNS(request) {
   });
 }
 
+// ==================== HEALTH HANDLER ====================
+// 要求：加载成功返回 true，失败返回 false
+async function handleHealth(request) {
+  try {
+    await loadLists(request.url);
+    return new Response('true', {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }
+    });
+  } catch {
+    return new Response('false', {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }
+    });
+  }
+}
+
 // ==================== ROUTING ====================
 export async function onRequest(context) {
   const path = new URL(context.request.url).pathname;
+
+  if (path === '/health') {
+    return handleHealth(context.request);
+  }
 
   if (path === '/430624') {
     return handleDNS(context.request);
