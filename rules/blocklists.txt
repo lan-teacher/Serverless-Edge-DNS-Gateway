@@ -17341,6 +17341,7 @@ adash.m.taobao.com
 adash.man.aliyuncs.com
 adashbc.m.taobao.com
 adashopnola.com
+adashx.m.taobao.com
 adashx.ut.alibaba.com
 adashx.ut.amap.com
 adashx.ut.cainiao.com
@@ -19147,6 +19148,7 @@ adpromo.peppynet.com
 adprotect.net
 adprotected.com
 adprovider.maru.jp
+adproxy.autohome.com.cn
 adproxy.tf1.fr
 adprunareb.digital
 adpub.yaolan.com
@@ -21663,6 +21665,7 @@ adsgig.com
 adsgno.tuinexpress.nl
 adsgo.nhipcaudautu.vn
 adsgroup.qq.com
+adsh.wagbridge.taobao.alimama.com
 adshack.com
 adshare.freedocast.com
 adshare.toutiao.com
@@ -194646,6 +194649,7 @@ p.rfihub.com
 p.russ-porno.net
 p.ryanhalliday.com
 p.rzlp.xyz
+p.s.360.cn
 p.sadoc.com.br
 p.sadoc360.com.br
 p.saozhu1.top
@@ -229770,6 +229774,8 @@ sdk.renrenjihua.com
 sdk.resu.io
 sdk.rfunbox.com
 sdk.rizhao9.com
+sdk.s.360.cn
+sdk.s.360.cn.webcdn.360qhcdn.com
 sdk.scopely.io
 sdk.shuhonggz.com
 sdk.silanggame.com

@@ -96,7 +96,6 @@ ad.ourgame.com
 ad.tencentmusic.com
 adash-emas.cn-hangzhou.aliyuncs.com
 adashbc.ut.taobao.com
-adashx.m.taobao.com
 adblock.adguard.com
 adcdn.pingan.com
 adcdn.tencentmusic.com
@@ -111,10 +110,8 @@ admin-oss-xlvip.a.88cdn.com
 admin.dable.io
 admin.mailchimp.com
 adnmb3.com
-adproxy.autohome.com.cn
 ads.privacy.qq.com
 ads.tdbank.com
-adsh.wagbridge.taobao.alimama.com
 adsmind.gdtimg.com
 adstats.tencentmusic.com
 adv.bloop.info
@@ -1323,7 +1320,6 @@ indivi-cdn.shouji.sogou.com
 inews.gtimg.com
 info.zb.qq.com
 info4.video.qq.com
-info6.video.qq.com
 infra-api.newrelic.com
 ingest.sentry.io
 init.itunes.apple.com
@@ -1932,7 +1928,6 @@ outexp-beta.cdn.qq.com
 oxygenos.oneplus.com
 p-l.play.aiseet.atianqi.com
 p.qlogo.cn
-p.s.360.cn
 p0.meituan.net
 p0.pipi.cn
 p01-ckdatabase.icloud.com
@@ -2352,8 +2347,6 @@ sdk.live.360.cn
 sdk.mihoyo.com
 sdk.open.talk.gepush.com
 sdk.ptqy.gitv.tv
-sdk.s.360.cn
-sdk.s.360.cn.webcdn.360qhcdn.com
 sdk.xyapi.game.qq.com
 sdkapi.sms.mob.com
 se.360.cn
