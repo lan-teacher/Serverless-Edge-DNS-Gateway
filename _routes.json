@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/430624"],
+  "include": ["/430624","/health"],
   "exclude": []
 }
