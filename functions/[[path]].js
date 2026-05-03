@@ -18,7 +18,6 @@ let privateTlds = Object.create(null);
 
 let rulesReady = false;
 let loadingPromise = null;
-let lastLoadOk = false;
 
 // ==================== LIST PARSER ====================
 async function parseDomainList(res) {
@@ -27,8 +26,7 @@ async function parseDomainList(res) {
 
   for (let line of text.split('\n')) {
     line = line.trim().toLowerCase();
-    if (!line) continue;
-    if (line.startsWith('#')) continue;
+    if (!line || line.startsWith('#')) continue;
     map[line] = 1;
   }
 
@@ -49,7 +47,7 @@ async function loadLists(baseUrl) {
       ]);
 
       if (!blockRes.ok || !allowRes.ok || !privateRes.ok) {
-        throw new Error('Failed to fetch one or more rule files');
+        throw new Error('Failed to fetch rule files');
       }
 
       const [newBlock, newAllow, newPrivate] = await Promise.all([
@@ -58,18 +56,12 @@ async function loadLists(baseUrl) {
         parseDomainList(privateRes)
       ]);
 
-      // 全部成功后再替换，避免半更新状态
       adBlocklist = newBlock;
       adAllowlist = newAllow;
       privateTlds = newPrivate;
-
       rulesReady = true;
-      lastLoadOk = true;
-    } catch (e) {
-      lastLoadOk = false;
-      throw e;
     } finally {
-      // 防止失败后 promise 卡死，后续可重试
+      // 成功/失败都清空，避免失败后永久卡住
       loadingPromise = null;
     }
   })();
@@ -78,18 +70,17 @@ async function loadLists(baseUrl) {
 }
 
 // ==================== DOMAIN MATCH ====================
-// 规则：先精准匹配，再父域匹配（支持子域）
-// 精准层：allow 优先于 block
-// 父域层：allow 优先于 block
+// 先精准匹配，再父域匹配（支持子域）
+// allow 优先于 block
 function matchDomain(domain, blockMap, allowMap) {
   if (!domain) return false;
   const d0 = domain.toLowerCase();
 
-  // 1) 精准匹配优先
+  // 1) 精准匹配
   if (allowMap[d0]) return false;
   if (blockMap[d0]) return true;
 
-  // 2) 父域匹配（子域继承）
+  // 2) 父域匹配
   let d = d0;
   while (true) {
     const dot = d.indexOf('.');
@@ -113,6 +104,7 @@ function matchPrivate(domain) {
     if (dot === -1) break;
     d = d.slice(dot + 1);
   }
+
   return false;
 }
 
@@ -126,7 +118,7 @@ function readName(buf, offset) {
   while (true) {
     const len = view[offset];
 
-    // pointer compression
+    // 压缩指针
     if ((len & 0xc0) === 0xc0) {
       const pointer = ((len & 0x3f) << 8) | view[offset + 1];
       if (!jumped) jumpOffset = offset + 2;
@@ -156,6 +148,18 @@ function extractQueryDomain(buf) {
   return name;
 }
 
+function extractQuestionInfo(buf) {
+  const q = readName(buf, 12);
+  const view = new DataView(buf);
+  const qtype = view.getUint16(q.offset);
+  const qclass = view.getUint16(q.offset + 2);
+  return {
+    qtype,
+    qclass,
+    questionEnd: q.offset + 4
+  };
+}
+
 // ==================== PARSE CNAME ====================
 function extractCnames(buf) {
   const view = new DataView(buf);
@@ -164,7 +168,7 @@ function extractCnames(buf) {
 
   let offset = 12;
 
-  // Skip questions
+  // skip question section
   for (let i = 0; i < qdcount; i++) {
     const q = readName(buf, offset);
     offset = q.offset + 4; // QTYPE + QCLASS
@@ -172,21 +176,20 @@ function extractCnames(buf) {
 
   const cnames = [];
 
+  // parse answer section
   for (let i = 0; i < ancount; i++) {
     const nameRes = readName(buf, offset);
     offset = nameRes.offset;
 
-    const type = view.getUint16(offset); // TYPE
-    offset += 2;
-
-    // CLASS + TTL
-    offset += 2 + 4;
+    const type = view.getUint16(offset);
+    offset += 2; // TYPE
+    offset += 2; // CLASS
+    offset += 4; // TTL
 
     const rdlength = view.getUint16(offset);
     offset += 2;
 
     if (type === 5) {
-      // CNAME
       const cnameRes = readName(buf, offset);
       cnames.push(cnameRes.name);
     }
@@ -197,16 +200,71 @@ function extractCnames(buf) {
   return cnames;
 }
 
-// ==================== DNS RESPONSES ====================
-function buildNxdomain(query) {
+// ==================== BLOCKED RESPONSE ====================
+// 被拦截后：
+// - A 查询 -> 返回 A 0.0.0.0
+// - AAAA 查询 -> 丢弃 AAAA（NODATA）
+// - 其他类型 -> NODATA
+function buildBlockedResponse(query) {
   const req = new Uint8Array(query);
-  const res = new Uint8Array(req.length);
-  res.set(req);
+  const { qtype, qclass, questionEnd } = extractQuestionInfo(query);
 
-  // QR=1, keep opcode/flags low bits from request
-  res[2] = 0x80 | (req[2] & 0x7f);
-  // RCODE=3 NXDOMAIN
-  res[3] = 0x83;
+  // A: 返回 0.0.0.0
+  if (qtype === 1) {
+    const rdlen = 4;
+    const answerLen = 2 + 2 + 2 + 4 + 2 + rdlen; // NAME+TYPE+CLASS+TTL+RDLEN+RDATA
+    const res = new Uint8Array(questionEnd + answerLen);
+
+    // header + question
+    res.set(req.slice(0, questionEnd), 0);
+
+    // QR=1
+    res[2] = req[2] | 0x80;
+    // RA=1, RCODE=0
+    res[3] = 0x80;
+
+    // ANCOUNT=1, NS=0, AR=0
+    res[6] = 0x00; res[7] = 0x01;
+    res[8] = 0x00; res[9] = 0x00;
+    res[10] = 0x00; res[11] = 0x00;
+
+    let o = questionEnd;
+
+    // NAME pointer -> 0xC00C (指向 question name)
+    res[o++] = 0xc0; res[o++] = 0x0c;
+
+    // TYPE=A
+    res[o++] = 0x00; res[o++] = 0x01;
+
+    // CLASS
+    res[o++] = (qclass >> 8) & 0xff;
+    res[o++] = qclass & 0xff;
+
+    // TTL=60
+    res[o++] = 0x00; res[o++] = 0x00; res[o++] = 0x00; res[o++] = 0x3c;
+
+    // RDLENGTH=4
+    res[o++] = 0x00; res[o++] = 0x04;
+
+    // RDATA=0.0.0.0
+    res[o++] = 0x00; res[o++] = 0x00; res[o++] = 0x00; res[o++] = 0x00;
+
+    return res.buffer;
+  }
+
+  // AAAA 或其他类型：NODATA（不返回 answer）
+  const res = new Uint8Array(questionEnd);
+  res.set(req.slice(0, questionEnd), 0);
+
+  // QR=1
+  res[2] = req[2] | 0x80;
+  // RA=1, RCODE=0
+  res[3] = 0x80;
+
+  // ANCOUNT=0, NS=0, AR=0
+  res[6] = 0x00; res[7] = 0x00;
+  res[8] = 0x00; res[9] = 0x00;
+  res[10] = 0x00; res[11] = 0x00;
 
   return res.buffer;
 }
@@ -225,8 +283,7 @@ async function forwardQuery(query) {
       body: query,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT)
     });
-
-    if (!res.ok) throw new Error('Primary upstream failed');
+    if (!res.ok) throw new Error('primary upstream failed');
     return await res.arrayBuffer();
   } catch {
     const res = await fetch(UPSTREAM_FALLBACK, {
@@ -235,19 +292,16 @@ async function forwardQuery(query) {
       body: query,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT)
     });
-
-    if (!res.ok) throw new Error('Fallback upstream failed');
+    if (!res.ok) throw new Error('fallback upstream failed');
     return await res.arrayBuffer();
   }
 }
 
 // ==================== DNS HANDLER ====================
 async function handleDNS(request) {
-  // 规则没加载成功时，直接报错（你也可以改成 fail-open）
   await loadLists(request.url);
 
   let query;
-
   if (request.method === 'POST') {
     query = await request.arrayBuffer();
   } else {
@@ -261,30 +315,30 @@ async function handleDNS(request) {
 
   const domain = extractQueryDomain(query);
 
-  // Private TLD block
+  // Private TLD 拦截
   if (BLOCK_PRIVATE_TLD && matchPrivate(domain)) {
-    return new Response(buildNxdomain(query), {
+    return new Response(buildBlockedResponse(query), {
       headers: { 'Content-Type': 'application/dns-message' }
     });
   }
 
-  // Domain blocklist/allowlist
+  // 黑白名单拦截
   if (AD_BLOCK_ENABLED && matchDomain(domain, adBlocklist, adAllowlist)) {
-    return new Response(buildNxdomain(query), {
+    return new Response(buildBlockedResponse(query), {
       headers: { 'Content-Type': 'application/dns-message' }
     });
   }
 
-  // Forward query
+  // 转发上游
   const responseBuffer = await forwardQuery(query);
 
-  // CNAME inspection
+  // CNAME 检查
   const cnames = extractCnames(responseBuffer);
   let depth = 0;
   for (const cname of cnames) {
     if (depth++ >= MAX_CNAME_DEPTH) break;
     if (matchDomain(cname, adBlocklist, adAllowlist)) {
-      return new Response(buildNxdomain(query), {
+      return new Response(buildBlockedResponse(query), {
         headers: { 'Content-Type': 'application/dns-message' }
       });
     }
@@ -295,8 +349,8 @@ async function handleDNS(request) {
   });
 }
 
-// ==================== HEALTH HANDLER ====================
-// 要求：加载成功返回 true，失败返回 false
+// ==================== HEALTH ====================
+// 加载成功返回 true，失败返回 false
 async function handleHealth(request) {
   try {
     await loadLists(request.url);
@@ -322,13 +376,8 @@ async function handleHealth(request) {
 export async function onRequest(context) {
   const path = new URL(context.request.url).pathname;
 
-  if (path === '/health') {
-    return handleHealth(context.request);
-  }
-
-  if (path === '/430624') {
-    return handleDNS(context.request);
-  }
+  if (path === '/health') return handleHealth(context.request);
+  if (path === '/430624') return handleDNS(context.request);
 
   return new Response('Not Found', { status: 404 });
 }
