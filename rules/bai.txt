@@ -34,7 +34,6 @@ dd-static.jd.com
 p14.d.meituan.net
 al.autohome.com.cn
 comm.app.autohome.com.cn
-adproxy.autohome.com.cn
 applogapi.autohome.com.cn
 fp-it.fengkongcloud.com
 wl.jd.com
@@ -88,10 +87,7 @@ partner.googleadservices.com
 syndicatedsearch.goog
 iyfbodn.com
 a0.app.xiaomi.com
-s.mvconf.f.360.cn
-p.s.360.cn
 attribute.shouji.360.cn
-sdk.s.360.cn
 prod-event-relay-weather-api.v.aaplimg.com
 slb-p2p.vcloud.ks-live.com
 appsupport.qq.com
@@ -110,11 +106,8 @@ polaris.zijieapi.com
 gecko.zijieapi.com
 log5-applog.zijieapi.com
 mclick.simba.taobao.com
-adashx.m.taobao.com
-adsh.wagbridge.taobao.alimama.com
 imapi2.snssdk.com
 adguard-dns.io
-sdk.s.360.cn.webcdn.360qhcdn.com
 pstatp.com
 dm-hl.toutiao.com
 byteimg.com
@@ -124,7 +117,6 @@ douyinstatic.com
 lf3-cdn-tos.bytegoofy.com
 data.ab.qq.com
 info4.video.qq.com
-info6.video.qq.com
 livep2.l.qq.com
 statis.api.3g.youku.com
 apiv4-iyes.youku.com
