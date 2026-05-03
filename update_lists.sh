@@ -203,13 +203,8 @@ BLOCK_URLS=(
 > "$ALLOW_FROM_BLOCK_TMP"
 
 process_urls "block_src" "$BLOCK_TMP" "$ALLOW_FROM_BLOCK_TMP" "${BLOCK_URLS[@]}"
-
-if [[ -f ./rules/hei.txt ]]; then
-    echo "  -> 追加 ./rules/hei.txt (自定义黑名单)"
-    while IFS= read -r tagged; do
-        [[ "${tagged%%:*}" == "BLOCK" ]] && echo "${tagged#*:}" >> "$BLOCK_TMP"
-    done < <(extract_domains "block_src" < ./rules/hei.txt)
-fi
+echo "追加黑名单"
+cat ./rules/hei.txt >> $BLOCK_TMP
 
 # ============================================================
 # 2. 白名单源处理
@@ -229,12 +224,9 @@ ALLOW_URLS=(
 > "$ALLOW_TMP"
 process_urls "allow_src" "/dev/null" "$ALLOW_TMP" "${ALLOW_URLS[@]}"
 
-if [[ -f ./rules/bai.txt ]]; then
-    echo "  -> 追加 ./rules/bai.txt (自定义白名单)"
-    while IFS= read -r tagged; do
-        [[ "${tagged%%:*}" == "ALLOW" ]] && echo "${tagged#*:}" >> "$ALLOW_TMP"
-    done < <(extract_domains "allow_src" < ./rules/bai.txt)
-fi
+echo "追加白名单"
+cat ./rules/bai.txt >> $ALLOW_TMP
+
 
 if [[ -s "$ALLOW_FROM_BLOCK_TMP" ]]; then
     echo "  -> 追加从黑名单源提取的 @@ 白名单 ($(wc -l < "$ALLOW_FROM_BLOCK_TMP" | tr -d ' ') 条)"
