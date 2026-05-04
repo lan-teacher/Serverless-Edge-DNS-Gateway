@@ -52,8 +52,6 @@ aod-cn-lb.itunes-apple.com.akadns.net
 aod.itunes.apple.com
 aod.itunes.g.aaplimg.com
 ap01.records.in.treasuredata.com
-ap6.ssl.msdk.qq.com
-apd-pcdnwxlogin.teg.tencent-cloud.net
 api-novel.uc.cn
 api-shoulei-ssl.xunlei.com
 api.ads.tvb.com
@@ -61,8 +59,6 @@ api.coolapk.com
 api.docodoco.jp
 api.iplay.163.com
 api.karte.io
-api.kingdata.ksyun.com
-api.kuaishouzt.com
 api.kwaizt.com
 api.look.163.com
 api.miui.security.xiaomi.com
@@ -85,7 +81,6 @@ appsupport.qq.com
 artifactory.appodeal.com
 attribute.shouji.360.cn
 auditude.com
-auth.wosms.cn
 auth.zijieapi.com
 avatar.coolapk.com
 aweme.snssdk.com
@@ -120,7 +115,6 @@ cdn.dcloud.net.cn
 cdn.duurzaam.greenchoice.nl
 cdn.rozetka.com.ua
 cdn.ynuf.aliapp.org
-cfg.imtt.qq.com
 chaturbate.com
 chickfrp.com
 cindyholbrook.lpages.co
@@ -151,7 +145,6 @@ cnbj1.fds.api.xiaomi.com
 collect.alipay.com
 comm.app.autohome.com.cn
 conf.hpplay.cn
-config.cmpassport.com
 content.ingbank.pl
 content.viralize.tv
 cp2-cdn-play.funshion.com
@@ -183,7 +176,6 @@ dig.lianjia.com
 dinamicx.alibabausercontent.com
 direct.wap.zol.com.cn
 dm-hl.toutiao.com
-dns.weixin.qq.com.cn
 dnsoverride.com
 douyincdn.com
 douyinpic.com
@@ -209,10 +201,8 @@ email.awscloud.com
 email.elitedangerous.com
 ename.com.cn
 ename.net
-enrichgw.10010.com
 ereg.wip3.adobe.com
 err.taobao.com
-etl-xlmc-ssl.xunlei.com
 ex.m.jd.com
 f-cashloan.snssdk.com
 f-cpay.snssdk.com
@@ -233,7 +223,6 @@ fp.tongdun.net
 fraudmetrix.cn
 g-acs.m.goofish.com
 g.live.com
-game.eve.mdt.qq.com
 gate.first-id.fr
 gecko.zijieapi.com
 gia.jd.com
@@ -259,10 +248,8 @@ h5.sm.cn
 h5offline.zhuanzhuan.com
 haohuo.snssdk.com
 hb.afl.rakuten.co.jp
-hdns.ksyun.com
 health.halodoc.com
 hidive.com
-hmrz.wo.cn
 home.focusatwill.com
 hosting24.com
 hpyrdr.com
@@ -278,15 +265,12 @@ iask.com.cn
 ib.snssdk.com
 ic.snssdk.com
 id.i2i.jp
-id.mail.wo.cn
 id6.me
 imapi2.snssdk.com
 img.ads.tvb.com
 img.funshion.com
-img.shouji.sogou.com
 imgsa.baidu.com
 imop.com
-indivi-cdn.shouji.sogou.com
 info4.video.qq.com
 infra-api.newrelic.com
 injections.adguard.org
@@ -346,9 +330,6 @@ log-api.pangolin-sdk-toutiao-b.com
 log-api.pangolin-sdk-toutiao.com
 log-upload.mihoyo.com
 log.mmstat.com
-log.snssdk.com
-log.tpns.tencent.com
-log1.cmpassport.com
 log5-applog.zijieapi.com
 logentries.com
 login.gaijin.net
@@ -364,7 +345,6 @@ manwa.me
 marketing.net.idealo-partner.com
 mclick.simba.taobao.com
 mdm.openapi.360.cn
-mdn.open.wo.cn
 media-consumer365.desigual.com
 media-img.puui.qpic.cn
 meiqia.com
@@ -383,7 +363,6 @@ mooc-image.nosdn.127.net
 ms.bdimg.com
 msg.douyu.com
 msg.video.qiyi.com
-mssdk.volces.com
 mssdk3-normal-lf.zijieapi.com
 my.tealiumiq.com
 myquark.cn
@@ -394,7 +373,6 @@ netatmo.commander1.com
 news.warhammer.com
 nginx-adg.iepose.cn
 nineto5mac-d.openx.net
-nishub1.10010.com
 niuaniua.com
 nsclick.baidu.com
 o1.d.meituan.net
@@ -405,18 +383,13 @@ official.paymaya.com
 omniture.walmart.com
 omsc.kpn.com
 onegoods.nosdn.127.net
-onekey1.cmpassport.com
 oneline.nextday.media
 onl.bz
 open.bytedanceapi.com
-open.e.189.cn
-opencloud.wostore.cn
-openmonitor.alipay-eco.com
 orbit.jd.com
 ot.io.mi.com
 oth.eve.mdt.qq.com
 oth.str.mdt.qq.com
-otheve.beacon.qq.com
 p.qlogo.cn
 p1-dcd.byteimg.com
 p1.d.meituan.net
@@ -446,7 +419,6 @@ partner.googleadservices.com
 passport.360.cn
 payapp.weixin.qq.com
 pepsico.com.cn
-pgdt.gtimg.cn
 pgpartner.com
 pic.imgdb.cn
 pic2.zhimg.com
@@ -500,7 +472,6 @@ s.optnx.com
 s0.2mdn.net
 s1.d.meituan.net
 s1.wp.com
-s2.kskwai.com
 s4.cnzz.com
 sami.bytedance.com
 saveu.zijieapi.com
@@ -527,7 +498,6 @@ sjh.baidu.com
 sl.hpplay.cn
 slb-p2p.vcloud.ks-live.com
 smart.360.cn
-smsks1.cmpassport.com
 smtp.focusgroupresearch.com
 snowflake.qq.com
 sobot.com
@@ -539,7 +509,6 @@ soutiapi.quark.cn
 speed.live.360.cn
 sq.bls.mdt.qq.com
 sqdd.myapp.com
-srv.android.shouji.sogou.com
 srv.sec.miui.com
 ssai.aniview.com
 stash.roistat.com
@@ -572,15 +541,12 @@ tnc0-aliec2.zijieapi.com
 tnc0-bjlgy.zijieapi.com
 tnc3-bjlgy.snssdk.com
 tnc3-bjlgy.zijieapi.com
-tobapplog.ctobsnssdk.com
-toblog.ctobsnssdk.com
 torimochi.line-apps.com
 tpstelemetry.tencent.com
 tr.rdrtr.com
 track.rutarget.ru
 track.sohu.com
 track.webgains.com
-tracker.ai.xiaomi.com
 trk.ecomm.lenovo.com
 ttwid.bytedance.com
 tunion-api.m.taobao.com
@@ -603,7 +569,6 @@ vas-lf-x.snssdk.com
 vas.snssdk.com
 vcs-quality.zijieapi.com
 vcs.zijieapi.com
-verify.cmpassport.com
 vip1.kuwo.cn
 vitacost.122.2o7.net
 vps.uc.cn
@@ -615,7 +580,6 @@ w8.com.cn
 waimai-guide.ele.me
 wan.baidu.com
 wan.douyu.com
-wap.cmpassport.com
 waphn.189.cn
 weather-analytics-events.apple.com
 weather-data.apple.com.akadns.net
@@ -628,7 +592,6 @@ wmflabs.org
 woniu.com
 www.alidns.com
 www.bqgyy.com
-www.cmpassport.com
 www.datadoghq-browser-agent.com
 www.dogpile.com
 www.easyicon.net

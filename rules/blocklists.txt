@@ -32583,6 +32583,7 @@ apcoi.com
 apconsultantgroup.com
 apczazvwydwnz.club
 apd-pcdnvodstat.teg.tencent-cloud.net
+apd-pcdnwxlogin.teg.tencent-cloud.net
 apd-pcdnwxnat.teg.tencent-cloud.net
 apd-pcdnwxstat.teg.tencent-cloud.net
 apd-vlive.apdcdn.tc.qq.com
@@ -33524,11 +33525,13 @@ api.keniagama.com.br
 api.khorcosmetics.com
 api.kickoffo.site
 api.kimoplex.com
+api.kingdata.ksyun.com
 api.kiyomitherapy.com.br
 api.klips.com.br
 api.kongogramado.com.br
 api.kpgxb.com
 api.ksport.io
+api.kuaishouzt.com
 api.kudaplox.com
 api.lab.amplitude.com
 api.lab8oficial.com.br
@@ -39414,6 +39417,7 @@ auth.stonepinecorp.es
 auth.stromleser.de
 auth.user.kugou.com
 auth.web-waltconect.com
+auth.wosms.cn
 auth0.top
 auth0.vernovls.com
 authanalysis.com
@@ -57559,6 +57563,7 @@ cfg-pages.concoursefinancial.com
 cfg.aiclk.com
 cfg.cml.ksmobile.com
 cfg.datafastguru.info
+cfg.imtt.qq.com
 cfg.weatherol.com.cn
 cfgc.flysleep.cn
 cfgc.zztfly.com
@@ -63681,6 +63686,7 @@ config.bdheaventouch.xyz
 config.best4flooring.co.uk
 config.chsmarttv.com
 config.claspws.tv
+config.cmpassport.com
 config.emb-api.com
 config.getmyip.com
 config.hiido.com
@@ -81551,6 +81557,7 @@ dns.quickstepflow.lat
 dns.wechat.com
 dns.weibo.cn
 dns.weixin.qq.com
+dns.weixin.qq.com.cn
 dns05.com
 dns1.os20231222.com
 dns2.net1.it
@@ -103605,6 +103612,7 @@ game-weilai-live.com
 game.51yund.com
 game.7youxi.com
 game.duolegame.com.cn
+game.eve.mdt.qq.com
 game.f4szf.top
 game.ftuzl.co
 game.html5.qq.com
@@ -118820,6 +118828,7 @@ hdmzf.cn
 hdnagl.womensecret.com
 hdnewporn.com
 hdns.k-dyn.com
+hdns.ksyun.com
 hdnse.newtonbaby.com
 hdntxwysefgmsu.com
 hdoditwa.xyz
@@ -152739,6 +152748,7 @@ log.smoney.vn
 log.sms.mob.com
 log.snapdeal.com
 log.snow.me
+log.snssdk.com
 log.snssdk.com.bytedns.net
 log.sosovalue.com
 log.spotify.com
@@ -152775,6 +152785,7 @@ log.tossinvest.com
 log.tosspayments.com
 log.tpns.gz2.tencent.com
 log.tpns.sh.tencent.com
+log.tpns.tencent.com
 log.trend.rankify.best
 log.ttbc-hcm.gov.vn
 log.tutuapp.com
@@ -152851,6 +152862,7 @@ log1.17173.com
 log1.apkomega.com
 log1.boomplaymusic.com
 log1.boyuanhulian.com
+log1.cmpassport.com
 log1.golfrival.net
 log1.olark.com
 log1.perfectworldgames.com
@@ -171650,6 +171662,7 @@ mssdk.capcutapi.us
 mssdk.snssdk.com
 mssdk.tiktokw.eu
 mssdk.tiktokw.us
+mssdk.volces.com
 mssdk.zijieapi.com
 mssdk16-normal-sg.capcutapi.com
 mssdk16-normal-us-ttp.capcutapi.us
@@ -184772,6 +184785,7 @@ oneidaboshersqueezy.cfd
 oneima.shop
 oneisan.net
 onekey.cmpassport.com
+onekey1.cmpassport.com
 onekey2.cmpassport.com
 onelead.ru
 onelinehome.fr
@@ -187480,6 +187494,7 @@ opencheats.com
 openclaw.im
 openclaws.io
 openclick.com
+opencloud.wostore.cn
 openclow.co.com
 opencoccoc.com
 opencollective.com
@@ -187529,6 +187544,7 @@ openmindedaching.com
 openmindedpassengerserr.com
 openmindter.com
 openmintwalk.pro
+openmonitor.alipay-eco.com
 openmonitor.alipay.com
 openmsf.3g.qq.com
 openmylink.in
@@ -188846,6 +188862,7 @@ otherslutwives-mia-louise.com
 otherwallowssheh.com
 otherwisepassageinsulting.com
 otherwiserustyvenomous.com
+otheve.beacon.qq.com
 otheve.play.aiseet.atianqi.com
 othfluktuhquy.website
 othisf.tagomago.pl
@@ -194698,6 +194715,7 @@ pgchandler.com
 pgdfbqnkprprf.space
 pgdragon.org
 pgdskofjaloka.si
+pgdt.gtimg.cn
 pgdt.gtimg.com
 pgdt.ugdt.qpic.cn
 pgdt.ugdtimg.cn
@@ -272325,6 +272343,7 @@ tob-cms.bj.bcebos.com
 tob-tracker.yximgs.com
 tobaccosturgeon.com
 tobaltoyon.com
+tobapplog.ctobsnssdk.com
 tobapplog.tobsnssdk.com
 tobapplog.volceapplog.com
 tobepure.com
@@ -272332,6 +272351,7 @@ tobewhilst.cfd
 tobias-prinz.com
 tobipovsem.com
 toblog.ctobsnsdk.com
+toblog.ctobsnssdk.com
 toblog.snssdk.com
 toblog.tobsnssdk.com
 toblog.volceapplog.com
@@ -276166,6 +276186,7 @@ tracker.ads.cctv.com
 tracker.adsales.rakuten.co.jp
 tracker.affiliate.iqbroker.com
 tracker.affirm.com
+tracker.ai.xiaomi.com
 tracker.alwaysdata.com
 tracker.anandtech.com
 tracker.anime47.com
