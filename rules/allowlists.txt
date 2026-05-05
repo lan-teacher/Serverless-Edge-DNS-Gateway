@@ -1,3 +1,4 @@
+
 1drv.com
 1sapp.com
 316.coolapk1s.com
@@ -40,7 +41,6 @@ ali-gamezone.static.yximgs.com
 ali-ky.static.yximgs.com
 ali.static.yximgs.com
 alissl.ucdl.pp.uc.cn
-aliyuncs.com
 alllaw.112.2o7.net
 alsc-buy2.ele.me
 amdc.m.taobao.com
@@ -63,7 +63,6 @@ api.kwaizt.com
 api.look.163.com
 api.miui.security.xiaomi.com
 api.neixin.cn
-api.nocturnal-narwhal.buzz
 api.sec.miui.com
 api.tv.sohu.com
 apiv4-iyes.youku.com
@@ -136,7 +135,6 @@ clickattr.wayup.com
 client-uc.heytapmobi.com
 cloud.notification-naviextras.com
 cloudcontrol.live.360.cn
-cloudflare.com
 cm-beacon.nakanohito.jp
 cm-widget.nakanohito.jp
 cmp.inmobi.com
@@ -148,11 +146,9 @@ conf.hpplay.cn
 content.ingbank.pl
 content.viralize.tv
 cp2-cdn-play.funshion.com
-cqshuda.com
 crm-cdn.peek-cloppenburg.com
 cs.silverpop.com
 csi.gstatic.com
-css.yhdmtu.xyz
 cutcaptcha.com
 d1z2jf7jlzjs58.cloudfront.net
 d2na2p72vtqyok.cloudfront.net
@@ -168,7 +164,6 @@ data.vod.itc.cn
 dcms.1688.com
 dd-static.jd.com
 develope-oss.lanzoug.com
-developer.apple.com
 developers.google.com
 dfcfw.com
 dftoutiao.com
@@ -225,6 +220,7 @@ g-acs.m.goofish.com
 g.live.com
 gate.first-id.fr
 gecko.zijieapi.com
+get.neofinancial.com
 gia.jd.com
 gias.jd.com
 gift.douyucdn.cn
@@ -239,7 +235,6 @@ grp07.ias.rakuten.co.jp
 gs.statcounter.com
 gsp0.baidu.com
 guid.tpns.tencent.com
-guokr.com
 gvt2.com
 h.trace.qq.com
 h5.hpplay.com.cn
@@ -274,9 +269,9 @@ imop.com
 info4.video.qq.com
 infra-api.newrelic.com
 injections.adguard.org
+intersport.peerius.com
 ipassport.ele.me
 ipolyfill-origin.bytedance.com
-iqiyi.com
 is.snssdk.com
 issuecdn.baidupcs.com
 istrategy.beacon.qq.com
@@ -289,7 +284,6 @@ js-gamezone.static.yximgs.com
 js.cdn.aliyun.dcloud.net.cn
 js.monitor.azure.com
 jspassport.ssl.qhimg.com
-jstatic.3.cn
 jwpcdn.com
 kcart.alipay.com
 knet.cn
@@ -324,7 +318,6 @@ live-trace.bilibili.com
 live.simcitybuildit.com
 livep2.l.qq.com
 livere.com
-lobechat.com
 local.adguard.org
 log-api.pangolin-sdk-toutiao-b.com
 log-api.pangolin-sdk-toutiao.com
@@ -348,7 +341,6 @@ mdm.openapi.360.cn
 media-consumer365.desigual.com
 media-img.puui.qpic.cn
 meiqia.com
-miaozhen.com
 mime.baidu.com
 mimg.127.net
 mipstatic.sm-tc.cn
@@ -500,7 +492,6 @@ slb-p2p.vcloud.ks-live.com
 smart.360.cn
 smtp.focusgroupresearch.com
 snowflake.qq.com
-sobot.com
 sofire.baidu.com
 sogoucdn.com
 soup.v.qq.com
@@ -519,7 +510,6 @@ stats.britishbaseball.org.uk
 stats.gc.apple.com
 statsig.com
 str.hit.gemius.pl
-stripe.com
 subscription.iqiyi.com
 support-beacon.nakanohito.jp
 support-widget.nakanohito.jp
@@ -535,6 +525,7 @@ taiga.maven.io
 tanx.com
 tcbox.baidu.com
 tianshu.gtimg.cn
+tieba.baidu.com
 tlh.gedidigital.it
 tms.capitalone.com
 tnc0-aliec2.zijieapi.com
@@ -565,8 +556,11 @@ v11-luna.douyinvod.com
 v16m-default.akamaized.net
 v5-luna.douyinvod.com
 vali-g1.cp31.ott.cibntv.net
+validate.perfdrive.com
 vas-lf-x.snssdk.com
 vas.snssdk.com
+vcentry2.valuecommerce.ne.jp
+vcentry3.valuecommerce.ne.jp
 vcs-quality.zijieapi.com
 vcs.zijieapi.com
 vip1.kuwo.cn
