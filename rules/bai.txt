@@ -121,3 +121,5 @@ livep2.l.qq.com
 statis.api.3g.youku.com
 apiv4-iyes.youku.com
 amdc.m.youku.com
+tieba.baidu.com
+
