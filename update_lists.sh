@@ -196,7 +196,6 @@ BLOCK_URLS=(
     "https://raw.githubusercontent.com/790953214/qy-Ads-Rule/main/black.txt"
     "https://raw.githubusercontent.com/afwfv/DD-AD/main/rule/DD-AD.txt"
     "https://raw.githubusercontent.com/2Gardon/SM-Ad-FuckU-hosts/master/SMAdHosts"
-    "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt"
 )
 
 > "$BLOCK_TMP"
