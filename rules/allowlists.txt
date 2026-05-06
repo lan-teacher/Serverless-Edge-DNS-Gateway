@@ -23,6 +23,7 @@ action.metaffiliation.com
 ad-log-upload.mihoyo.com
 ad.kazakinfo.com
 ad.mcloud.139.com
+ad.ourgame.com
 adash-emas.cn-hangzhou.aliyuncs.com
 adashbc.ut.taobao.com
 adblock.adguard.com
@@ -225,7 +226,6 @@ gia.jd.com
 gias.jd.com
 gift.douyucdn.cn
 gm.mmstat.com
-go.adjust.com
 go.redirectingat.com
 go.scorptec.com.au
 googleadservices.com
@@ -490,8 +490,8 @@ sjh.baidu.com
 sl.hpplay.cn
 slb-p2p.vcloud.ks-live.com
 smart.360.cn
-smtp.focusgroupresearch.com
 snowflake.qq.com
+sobot.com
 sofire.baidu.com
 sogoucdn.com
 soup.v.qq.com
