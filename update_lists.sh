@@ -211,11 +211,11 @@ cat ./rules/hei.txt >> $BLOCK_TMP
 echo ""
 echo "=========================================="
 echo "开始下载并处理白名单 allowlists..."
+#    "https://raw.githubusercontent.com/mphin/adguardhome_rules/main/Allowlist.txt"
+ #   "https://raw.githubusercontent.com/Zisbusy/AdGuardHome-Rules/main/Rules/whitelist.txt"
 #    "https://raw.githubusercontent.com/Menghuibanxian/AdguardHome/main/White.txt"
 ALLOW_URLS=(
     "https://cdn.jsdelivr.net/gh/Zisbusy/AdGuardHome-Rules@main/Rules/whitelist.txt"
-    "https://raw.githubusercontent.com/mphin/adguardhome_rules/main/Allowlist.txt"
-    "https://raw.githubusercontent.com/Zisbusy/AdGuardHome-Rules/main/Rules/whitelist.txt"
 )
 
 > "$ALLOW_TMP"
