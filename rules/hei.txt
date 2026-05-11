@@ -738,3 +738,6 @@ pgdt.gtimg.cn
 adsmind.tc.qq.com
 pgdt.ugdtimg.com
 innoads.cn
+ad.wexin.qq.com
+e.qq.com
+e.weixin.com
