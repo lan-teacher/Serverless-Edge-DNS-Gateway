@@ -1,4 +1,11 @@
 430624.xyz
+adg.430624.xyz
+adg-cdn.430624.xyz
+adg-cdn2.430624.xyz
+vercel-go.430624.xyz
+vercel-google.430624.xyz
+edgeone.430624.xyz
+cfyx.430624.xyz
 xinqiucc.com
 addressapi.meituan.com
 chickfrp.com
