@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
-const UPSTREAM_PRIMARY = 'https://1.1.1.1/dns-query';
-const UPSTREAM_FALLBACK = 'https://8.8.8.8/dns-query';
+const UPSTREAM_PRIMARY = 'https://dns.alidns.com/dns-query';
+const UPSTREAM_FALLBACK = 'https://doh.pub/dns-query';
 const UPSTREAM_TIMEOUT = 5000;
 
 const BLOCKLIST_URL = '/rules/blocklists.txt';
